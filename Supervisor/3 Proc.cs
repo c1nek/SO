@@ -8,7 +8,7 @@ namespace Process
 {
     public static class Proc
     {
-        
+       public static void XC(string name);
     }
     class PCB
     {
