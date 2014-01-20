@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Supervisor
 {
-    class Inte
+    public static class Inte
     {
+        static void call(string s)
+        {
+
+        }
     }
 }

@@ -8,13 +8,21 @@ namespace Process
 {
     public static class Proc
     {
-       public static void XC(string name);
-    }
-    class PCB
-    {
-        string NAME=null;
-        object NEXT_PCB_THIS_GROUP=null;
-        object NEXT_PCB_THIS_GROUP=null;
+        public static void XC(string name)
+        {
 
+        }
+        public static void XI()
+        {
+
+        }
+        
     }
+    
+    
+        
+        
+        
+
+    
 }
