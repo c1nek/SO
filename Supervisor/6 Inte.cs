@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Supervisor
+namespace Interpreter
 {
-    public static class Inte
+    public static class Inter
     {
-        static void call(string s)
+        public static void Run()
         {
+
 
         }
     }

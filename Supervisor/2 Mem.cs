@@ -8,9 +8,14 @@ namespace Memory
 {
   public static class Mem
     {
+       public static string[] MEMORY = new string[1000];
+       public static void XA()
+       {
+           //allocate memory
+       }
        public static void start()
-        {
-           //opisanie całej pamięci przy pomocy FSB i nadanie kluczom wartości 0
-        }
+       {
+           //create FSB blocks (called only once by IPLRTN)
+       }
     }
 }

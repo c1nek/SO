@@ -3,14 +3,41 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Interpreter;
 
 namespace Processor
 {
     public static class zawiadowca
     {
-        public PCB RUNNING=null;
-        public PCB NEXTTRY=null;
-        public bool NEXTTRY_MODIFIED=false;
+        public static PCB RUNNING=null;
+        public static PCB NEXTTRY=null;
+        public static bool NEXTTRY_MODIFIED=false;
+        private static int licznik = 0;
+        public static void Run()
+        {
+            while (true)
+            {
+                licznik++;
+                if (licznik == 50)
+                {
+                    bool i = true;
+                    while (i)
+                    {
+                        if (!NEXTTRY.BLOCKED)
+                        {
+                            if (!NEXTTRY.STOPPED)
+                            {
+                                RUNNING = NEXTTRY;
+                                NEXTTRY = RUNNING.NEXT_PCB_ALL;
+                                RUNNING.cpu_stan_laduj();
+                                i = false;
+                            }
+                        }
+                    }
+                }
+                Inter.Run();
+            }
+        }
 
     }
 
@@ -18,12 +45,9 @@ namespace Processor
     public class PCB
     {
         /*PCB*/
-        public string nazwaProcesu;
-        public bool running;
-        public bool stopped;
-        public bool blocked;
-        public bool semafor_info;
-        public int group_indeks;
+        public string NAME;
+        public bool STOPPED;
+        public bool BLOCKED;
         public int instruction_done;
         public bool czy_sprawdzony;
         public string[] MEMORY_BLOCK;
@@ -31,6 +55,7 @@ namespace Processor
         public PCB LAST_PCB_ALL;
         public PCB NEXT_PCB_GROUP;
         public PCB LAST_PCB_GROUP;
+        public PCB NEXT_SEMAPHORE_WAITER;
         public object[] cpu_stan = new object[5];
 
         public void cpu_stan_zapisz()
@@ -42,15 +67,21 @@ namespace Processor
             cpu_stan[4] = rejestry.get_lr();
         }
 
-        public PCB(string name, int time, int group)
+        public void cpu_stan_laduj()
+        {
+            rejestry.set_r0(cpu_stan[0]);
+            rejestry.set_r1(cpu_stan[1]);
+            rejestry.set_r2(cpu_stan[2]);
+            rejestry.set_r3(cpu_stan[3]);
+            rejestry.set_lr(cpu_stan[4]);
+        }
+
+        public PCB(string name, int time)
         {
             
-            nazwaProcesu = name;
-            running = false;
-            blocked = false;
-            stopped = false;
-            semafor_info = false;
-            group_indeks = group;
+            NAME = name;
+            BLOCKED = false;
+            STOPPED = false;
             instruction_done = 0;
             czy_sprawdzony = true;
             NEXT_PCB_ALL = null;
@@ -125,7 +156,7 @@ namespace Processor
     }
 
 
-
+    //do poprawki!!!!!VVVVVVVVV
     public class Semafor
     {
         private int wartosc;
@@ -136,7 +167,7 @@ namespace Processor
             wartosc = 0;
         }
 
-        public void p(PCB x)
+        public void p(PCB x)//jeżeli semafor bedzie niedodatni to wtedy następuje blokowanie procesu który jest w RUNNING
         {
             Console.WriteLine("Wykonuje program P semafora");
 

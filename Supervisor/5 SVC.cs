@@ -15,7 +15,6 @@ namespace Supervisor
         //Na samym początku Tworzy procesy *IN i *OUT
        
         //Poprzez Komunikację z Procesem *IN szuka karty (linijki) $JOB
-        public static string[] MEMORY_IBSUB = new string[100];
 
         
 
@@ -30,10 +29,16 @@ namespace Supervisor
        static void Main()
        {
           
-           //tworzy swój PCB dodaje go na listę ustaiwa wszystkie wartości
-           PCB iplrtn = new PCB("*IPRTLN", 0, 0);
+           //tworzy swój PCB dodaje go na listę ustaiwa wszystkie wartości by wskazywały na niego
+           PCB iplrtn = new PCB("*IPRTLN", 0);
            rejestry.set_r2(iplrtn);
            Proc.XI();
+           zawiadowca.RUNNING = iplrtn;
+           zawiadowca.NEXTTRY = iplrtn;
+           iplrtn.LAST_PCB_ALL = iplrtn;
+           iplrtn.LAST_PCB_GROUP = iplrtn;
+           iplrtn.NEXT_PCB_ALL = iplrtn;
+           iplrtn.NEXT_PCB_GROUP = iplrtn;
 
 
            Mem.start();//całą pamięć wolną opisuje przy pomocy bloków FSB
