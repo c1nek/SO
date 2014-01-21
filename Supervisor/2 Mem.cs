@@ -10,7 +10,7 @@ namespace Memory
     
     public static class Mem
     {
-        public static byte[] MEMORY = new byte[1000];
+        public static byte[] MEMORY = new byte[65536];
         public static void XA()
         {
             //allocate memory

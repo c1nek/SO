@@ -61,27 +61,30 @@ namespace Processor
         public PCB NEXT_PCB_GROUP;
         public PCB LAST_PCB_GROUP;
         public PCB NEXT_SEMAPHORE_WAITER;
-        public object[] cpu_stan = new object[5];
+        public int adres_pocz;
+        public object[] cpu_stan = new object[6];
 
         public void cpu_stan_zapisz()
         {
-            cpu_stan[0] = rejestry.get_r0();
-            cpu_stan[1] = rejestry.get_r1();
-            cpu_stan[2] = rejestry.get_r2();
-            cpu_stan[3] = rejestry.get_r3();
-            cpu_stan[4] = rejestry.get_lr();
+            cpu_stan[0] = rejestry.r0;
+            cpu_stan[1] = rejestry.r1;
+            cpu_stan[2] = rejestry.r2;
+            cpu_stan[3] = rejestry.r3;
+            cpu_stan[4] = rejestry.lr;
+            cpu_stan[5] = rejestry.ab;
         }
 
         public void cpu_stan_laduj()
         {
-            rejestry.set_r0(cpu_stan[0]);
-            rejestry.set_r1(cpu_stan[1]);
-            rejestry.set_r2(cpu_stan[2]);
-            rejestry.set_r3(cpu_stan[3]);
-            rejestry.set_lr(cpu_stan[4]);
+            rejestry.r0 = cpu_stan[0];
+            rejestry.r1 = cpu_stan[1];
+            rejestry.r2 = cpu_stan[2];
+            rejestry.r3 = cpu_stan[3];
+            rejestry.lr = (int)cpu_stan[4];
+            rejestry.ab = (bool)cpu_stan[5];
         }
 
-        public PCB(string name)
+        public PCB(string name, int adres)
         {
             
             NAME = name;
@@ -93,6 +96,7 @@ namespace Processor
             LAST_PCB_ALL = null;
             NEXT_PCB_GROUP = null;
             LAST_PCB_GROUP = null;
+            adres_pocz = adres;
         }
     }
 
@@ -102,62 +106,10 @@ namespace Processor
         public static object r1;
         public static object r2;
         public static object r3;
-        public static object lr;
+        public static int lr;    //licznik rozkazów
+        public static bool ab;  //adresowanie bezwzględne
 
 
-        //to należy wywalićVVVVV
-        /*getery*/
-        public static object get_r0()
-        {
-            return r0;
-        }
-
-        public static object get_r1()
-        {
-            return r1;
-        }
-
-        public static object get_r2()
-        {
-            return r2;
-        }
-
-        public static object get_r3()
-        {
-            return r3;
-        }
-
-        public static object get_lr()
-        {
-            return lr;
-        }
-
-
-        /*settery*/
-        public static void set_r0(object value)
-        {
-            r0 = value;
-        }
-
-        public static void set_r1(object value)
-        {
-            r1 = value;
-        }
-
-        public static void set_r2(object value)
-        {
-            r2 = value;
-        }
-
-        public static void set_r3(object value)
-        {
-            r3 = value;
-        }
-
-        public static void set_lr(object value)
-        {
-            lr = value;
-        }
 
 
     }

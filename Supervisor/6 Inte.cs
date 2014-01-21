@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Memory;
+using Processor;
 //do dokończenia
 namespace Interpreter
 {
@@ -18,7 +19,10 @@ namespace Interpreter
 
         public static void Run()
         {
-
+            if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.SVC)
+            {
+                rejestry.lr++;
+            }
 
         }
     }
