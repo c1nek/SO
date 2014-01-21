@@ -9,18 +9,23 @@ namespace Processor
 {
     public static class zawiadowca
     {
-        public static PCB RUNNING=null;
-        public static PCB NEXTTRY=null;
-        public static bool NEXTTRY_MODIFIED=false;
+        public static List<PCB> listaWszystichPCB = new List<PCB>();
+        public static PCB RUNNING = null;
+        public static PCB NEXTTRY = null;
+        public static bool NEXTTRY_MODIFIED = false;
+        public static bool wymusZmiane = false;
         private static int licznik = 0;
         public static void Run()
         {
             while (true)
             {
                 licznik++;
-                if (licznik == 50)
+                if (licznik == 50 || wymusZmiane)
                 {
+                    wymusZmiane = false;
+                    NEXTTRY_MODIFIED = false;
                     bool i = true;
+                    RUNNING.cpu_stan_zapisz();
                     while (i)
                     {
                         if (!NEXTTRY.BLOCKED)
@@ -31,6 +36,7 @@ namespace Processor
                                 NEXTTRY = RUNNING.NEXT_PCB_ALL;
                                 RUNNING.cpu_stan_laduj();
                                 i = false;
+                                licznik=0;
                             }
                         }
                     }
@@ -93,12 +99,14 @@ namespace Processor
 
     public static  class rejestry
     {
-        private static object r0; //akumulator
-        private static object r1;
-        private static object r2;
-        private static object r3;
-        private static object lr;
+        public static object r0; //akumulator
+        public static object r1;
+        public static object r2;
+        public static object r3;
+        public static object lr;
 
+
+        //to należy wywalićVVVVV
         /*getery*/
         public static object get_r0()
         {
@@ -157,54 +165,62 @@ namespace Processor
 
 
     //do poprawki!!!!!VVVVVVVVV
-    public class Semafor
+    public class SEMAPHORE
     {
-        private int wartosc;
-        public List<PCB> waiting_proceses = new List<PCB>();
-
-        public Semafor()
+        private int VALUE;
+        private List<PCB> semaphoreList = new List<PCB>();
+        public PCB FIRST_WAITER=null;
+        public SEMAPHORE()
         {
-            wartosc = 0;
+            VALUE = 0;
         }
 
-        public void p(PCB x)//jeżeli semafor bedzie niedodatni to wtedy następuje blokowanie procesu który jest w RUNNING
+        public static void P()//jeżeli semafor bedzie niedodatni to wtedy następuje blokowanie procesu który jest w RUNNING
         {
-            Console.WriteLine("Wykonuje program P semafora");
-
-            if (wartosc > 0)
+            SEMAPHORE S = (SEMAPHORE) rejestry.r2;
+            S.VALUE--;
+            if (S.VALUE < 0)
             {
-                Console.WriteLine("P: Przyznaje dostep do semafora");
-                x.semafor_info = true;
+                S.semaphoreList.Add(zawiadowca.RUNNING);
+                if (S.VALUE == (-1))
+                    S.FIRST_WAITER = zawiadowca.RUNNING;
+                else
+                {
+                    PCB temp = S.semaphoreList.Last();
+                    temp.NEXT_SEMAPHORE_WAITER = zawiadowca.RUNNING;
+                }
+                zawiadowca.RUNNING.BLOCKED = true;
+                zawiadowca.wymusZmiane = true;
+                return;
             }
             else
             {
-
-                Console.WriteLine(" P: Brak dostepu - dodaje proces na liste oczekujacych");
-                waiting_proceses.Add(x);
+                return;
             }
-            wartosc -= 1;
+
         }
 
-        public void v()
+        public static void v()
         {
-            Console.WriteLine("Wykonuje program V semafora");
-            wartosc += 1;
-            if (waiting_proceses.Count() > 0)
+            SEMAPHORE S = (SEMAPHORE)rejestry.r2;
+            S.VALUE++;
+            if (S.VALUE <= 0)
             {
-                Console.WriteLine("V: Przyznaje dostep procesowi z listy oczekujacych");
-                semafor_waiting();
+                S.FIRST_WAITER.BLOCKED = false;
+                if (zawiadowca.NEXTTRY_MODIFIED == false)
+                {
+                    zawiadowca.NEXTTRY = S.FIRST_WAITER;
+                    zawiadowca.NEXTTRY_MODIFIED = true;
+                }
+                S.FIRST_WAITER=S.FIRST_WAITER.NEXT_SEMAPHORE_WAITER;
+                S.semaphoreList[0].NEXT_SEMAPHORE_WAITER = null;
+                S.semaphoreList.RemoveAt(0);
+                return;
+
             }
-            else
-            {
-                Console.WriteLine("V: Lista oczekujacych procesow pod semaforem jest pusta");
-            }
+            return;
         }
 
-        public void semafor_waiting()
-        {
-            PCB x = waiting_proceses[0];
-            waiting_proceses.RemoveAt(0);
-        }
 
 
 
