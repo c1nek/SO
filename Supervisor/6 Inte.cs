@@ -22,6 +22,7 @@ namespace Interpreter
             if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.SVC)
             {
                 rejestry.lr++;
+
             }
 
         }

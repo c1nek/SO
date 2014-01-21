@@ -16,7 +16,7 @@ namespace Supervisor
         public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, METHOD, CREATE };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_CREATE : byte { KOM, PCB };
-        public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART };
+        public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM };
         public enum wartosc_SEM : byte { MEMORY };
         public enum wartosc_METHOD : byte { CZYSC_PODR };
         //Na samym początku Tworzy procesy *IN i *OUT
@@ -24,7 +24,7 @@ namespace Supervisor
         //Poprzez Komunikację z Procesem *IN szuka karty (linijki) $JOB
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
-        /*0000*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_SEM.MEMORY,       //zapisanie semafora pamięci w 2 rejestrze
+        /*0000*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.SEM,      (byte)wartosc_SEM.MEMORY,       //zapisanie semafora pamięci w 2 rejestrze
         /*0003*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.P,                                        //wywołanie operacji P na semaforze w 2 rejestrze (semafor pamięci)
         
         /*0005*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R3,       (byte)wartosc_TYP.WART,1,0,     //wpisanie do rejestru wartości 8
@@ -95,7 +95,7 @@ namespace Supervisor
 
                 (byte)rozkaz.SVC,       (byte)wartosc_SVC.S,                                        //wysłanie komunikatu wskazywanego przez reg 2
 
-                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.CZYSC_PODR, (byte) wartosc_TYP.R3, (byte) wartosc_TYP.WART, 1,0,
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.CZYSC_PODR, (byte)wartosc_TYP.R3, (byte)wartosc_TYP.WART, (byte)1, (byte)0,
 
                 (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,8,
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      32,

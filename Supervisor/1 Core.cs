@@ -151,7 +151,7 @@ namespace Processor
 
         }
 
-        public static void v()
+        public static void V()
         {
             SEMAPHORE S = (SEMAPHORE)rejestry.r2;
             S.VALUE++;
