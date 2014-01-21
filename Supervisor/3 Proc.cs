@@ -8,6 +8,7 @@ namespace Process
 {
     public static class Proc
     {
+
         public static void XC(string name)
         {
 
@@ -17,6 +18,12 @@ namespace Process
 
         }
         
+    }
+
+    public class kom //klasa imitująca listę argumentów przy wysyłaniu komunikatu (na nią wskazuje rejestr 2)
+    {
+        string nazwaOdbiorcy;
+        string tekst;
     }
     
     

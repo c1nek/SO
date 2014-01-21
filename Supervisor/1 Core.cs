@@ -9,7 +9,6 @@ namespace Processor
 {
     public static class zawiadowca
     {
-        public static List<PCB> listaWszystichPCB = new List<PCB>();
         public static PCB RUNNING = null;
         public static PCB NEXTTRY = null;
         public static bool NEXTTRY_MODIFIED = false;
@@ -82,7 +81,7 @@ namespace Processor
             rejestry.set_lr(cpu_stan[4]);
         }
 
-        public PCB(string name, int time)
+        public PCB(string name)
         {
             
             NAME = name;
