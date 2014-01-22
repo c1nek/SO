@@ -33,11 +33,11 @@ namespace Supervisor
         /*000C*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.V,                                        //wywołanie operacji V na semaforze w 2 rejestrze (semafor pamięci)
         
         /*000E*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,           //przepisanie adresu pamięci roboczej do rejestru 1
-        /*0011*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /*0011*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
         /*0014*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*0016*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'I',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /*0016*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'I',                      //wpisanie znaku do komórki pamięci w rejestrze 1
         /*0019*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*001B*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'N',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /*001B*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'N',                      //wpisanie znaku do komórki pamięci w rejestrze 1
         /*001E*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
         /*0020*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R3,           //wpisanie adresu pamięci roboczej do rejestru 2
         /*0023*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,                                        //wywołanie programu tworzącego proces (program pobiera nazwę procesu z rejestru 2)
@@ -50,13 +50,13 @@ namespace Supervisor
         /*0033*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,                                        //uruchomienie procesu
  
         /*0035*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,           //przepisanie adresu pamięci roboczej do rejestru 1
-        /*0038*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /*0038*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
         /*003B*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*003D*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'O',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /*003D*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'O',                      //wpisanie znaku do komórki pamięci w rejestrze 1
         /*0040*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*0042*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'U',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /*0042*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'U',                      //wpisanie znaku do komórki pamięci w rejestrze 1
         /*0045*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*0047*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'T',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /*0047*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'T',                      //wpisanie znaku do komórki pamięci w rejestrze 1
         /*004A*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R3,           //wpisanie adresu pamięci roboczej do rejestru 2
         /*004D*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,                                        //wywołanie programu tworzącego proces (program pobiera nazwę procesu z rejestru 2)
         
@@ -68,37 +68,37 @@ namespace Supervisor
         /*005E*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,                                        //uruchomienie procesu
 
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,           //przepisanie adresu pamięci roboczej do rejestru 1
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'I',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'I',                      //wpisanie znaku do komórki pamięci w rejestrze 1
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'N',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'N',                      //wpisanie znaku do komórki pamięci w rejestrze 1
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,       
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,8,
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      8,                             //określenie długości komunikatu
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'R',                      //zapisanie komunikatu
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'R',                      //zapisanie komunikatu
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'E',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'E',
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'A',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'A',
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'D',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'D',
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'0',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'0',
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'0',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'0',
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'0',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'0',
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)'1',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'1',
 
                 (byte)rozkaz.SVC,       (byte)wartosc_SVC.S,                                        //wysłanie komunikatu wskazywanego przez reg 2
 
                 (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.CZYSC_PODR, (byte)wartosc_TYP.R3, (byte)wartosc_TYP.WART, (byte)1, (byte)0,
 
                 (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,8,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      32,
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,32,
 
         /*,"","","","",""*/};
 
