@@ -16,7 +16,7 @@ namespace Interpreter
         public enum wartosc_CREATE : byte { KOM, PCB };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM };
         public enum wartosc_SEM : byte { MEMORY, USER, WAIT, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM };
         
 
         public static List<int> progAdr = new List<int>();
@@ -656,6 +656,11 @@ namespace Interpreter
 
                     }
                     IBSUB.przygXR(adr, dl);
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.INTER_KOM)
+                {
+                    rejestry.lr++;
+                    IBSUB.interKom();
                 }
                 
                 //dokończyć

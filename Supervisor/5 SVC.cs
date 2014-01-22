@@ -18,7 +18,7 @@ namespace Supervisor
         public enum wartosc_CREATE : byte { KOM, PCB };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM };
         public enum wartosc_SEM : byte { MEMORY, USER, WAIT, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM };
         //Na samym początku Tworzy procesy *IN i *OUT
        
         //Poprzez Komunikację z Procesem *IN szuka karty (linijki) $JOB
@@ -106,6 +106,9 @@ namespace Supervisor
                 (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.CZYSC_PODR, (byte)wartosc_TYP.R3, (byte)wartosc_TYP.WART, (byte)1, (byte)0,
 
                 (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.PRZYG_XR,  (byte)wartosc_TYP.R2, (byte)wartosc_TYP.WART, 32,
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.R,
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.INTER_KOM,
+                
         /**/    
 
         /*,"","","","",""*/};
@@ -137,6 +140,10 @@ namespace Supervisor
             Mem.MEMORY[tmp] =(byte) dl;
         }
 
+        public static void interKom()
+        {
+
+        }
         
     }
 
@@ -180,8 +187,8 @@ namespace Supervisor
            ibsub1.NEXT_PCB_ALL = ibsub2;
            ibsub2.NEXT_PCB_ALL = iplrtn;
            
-           ibsub1.LAST_PCB_ALL = ibsub2;
-           ibsub2.LAST_PCB_ALL = ibsub2;
+           ibsub1.LAST_PCB_ALL = iplrtn;
+           ibsub2.LAST_PCB_ALL = iplrtn;
 
            ibsub1.NEXT_PCB_GROUP = ibsub1;
            ibsub2.NEXT_PCB_GROUP = ibsub2;
