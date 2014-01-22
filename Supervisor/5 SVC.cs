@@ -140,8 +140,8 @@ namespace Supervisor
            iplrtn.NEXT_PCB_ALL = iplrtn;
            iplrtn.NEXT_PCB_GROUP = iplrtn;
 
-           IBSUB.zaladuj(100);
-           IBSUB.zaladuj(300);
+           IBSUB.zaladuj(256);
+           IBSUB.zaladuj(1280);
 
            Mem.start();//całą pamięć wolną opisuje przy pomocy bloków FSB i wszystkie klucze ochrony ustawia na 0
 
@@ -150,14 +150,14 @@ namespace Supervisor
            ibsub1.cpu_stan[1] = 0;
            ibsub1.cpu_stan[2] = 0;
            ibsub1.cpu_stan[3] = 0;
-           ibsub1.cpu_stan[4] = 100;
+           ibsub1.cpu_stan[4] = 256;
 
            PCB ibsub2 = new PCB("*IBSUB",100);
            ibsub2.cpu_stan[0] = 0;
            ibsub2.cpu_stan[1] = 0;
            ibsub2.cpu_stan[2] = 0;
            ibsub2.cpu_stan[3] = 0;
-           ibsub2.cpu_stan[4] = 300;
+           ibsub2.cpu_stan[4] = 1280;
 
            iplrtn.NEXT_PCB_ALL = ibsub1;
            iplrtn.LAST_PCB_ALL = ibsub2;

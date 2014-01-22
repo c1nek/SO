@@ -60,6 +60,8 @@ namespace Processor
         public PCB LAST_PCB_ALL;
         public PCB NEXT_PCB_GROUP;
         public PCB LAST_PCB_GROUP;
+        public SEMAPHORE MESSAGE_SEMAPHORE_COMMON;
+        public SEMAPHORE MESSAGE_SEMAPHORE_RECEIVER;
         public PCB NEXT_SEMAPHORE_WAITER;
         public int adres_pocz;
         public object[] cpu_stan = new object[6];
@@ -115,7 +117,6 @@ namespace Processor
     }
 
 
-    //do poprawki!!!!!VVVVVVVVV
     public class SEMAPHORE
     {
         private int VALUE;

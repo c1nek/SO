@@ -23,11 +23,114 @@ namespace Interpreter
             {
                 rejestry.lr++;
 
+                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.P)
+                {
+                    //wywołaj metode P klasy semafor
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.V)
+                {
+                    //wywołaj metode V klasy semafor
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.G)
+                {
+                    //wywołaj metode Run zawiadowcy
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.A)
+                {
+                    //wywołaj metode A klasy Mem
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.E)
+                {
+                    //wywołaj metode E klasy Mem
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.F)
+                {
+                    //wywołaj metode F klasy Mem
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.B)
+                {
+                    //wywołaj metode B klasy Mem
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.C)
+                {
+                    //wywołaj metode C klasy Proc
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.D)
+                {
+                    //wywołaj metode D klasy Proc
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.H)
+                {
+                    //wywołaj metode H klasy Proc
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.I)
+                {
+                    //wywołaj metode I klasy Proc
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.J)
+                {
+                    //wywołaj metode J klasy Proc
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.N)
+                {
+                    //wywołaj metode N klasy Proc
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.R)
+                {
+                    //wywołaj metode R klasy Proc
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.S)
+                {
+                    //wywołaj metode S klasy Proc
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.Y)
+                {
+                    //wywołaj metode Y klasy Proc
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.Z)
+                {
+                    //wywołaj metode Z klasy Proc
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.Q)
+                {
+                    //wywołaj metode Q klasy Proc
+                }
+            }
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.ADD)
+            {
+                rejestry.lr++;
+                //dokończyć
+            }
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.MOV)
+            {
+                rejestry.lr++;
+                //dokończyć
+            }
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.DIV)
+            {
+                rejestry.lr++;
+                //dokończyć
+            }
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.SUB)
+            {
+                rejestry.lr++;
+                //dokończyć
+            }
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.INC)
+            {
+                rejestry.lr++;
+                //dokończyć
+            }
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.METHOD)
+            {
+                rejestry.lr++;
+                //dokończyć
             }
 
         }
     }
 
+    //wywalićVVVVVVVV
     public class CALL
     {
         public int rozkaz;
