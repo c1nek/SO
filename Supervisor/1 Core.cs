@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Interpreter;
-
+using Process;
 namespace Processor
 {
     public static class zawiadowca
@@ -63,6 +63,7 @@ namespace Processor
         public SEMAPHORE MESSAGE_SEMAPHORE_COMMON;
         public SEMAPHORE MESSAGE_SEMAPHORE_RECEIVER;
         public PCB NEXT_SEMAPHORE_WAITER;
+        public MESSAGE FIRST_MESSAGE;
         public int adres_pocz;
         public object[] cpu_stan = new object[6];
 
@@ -125,6 +126,10 @@ namespace Processor
         public SEMAPHORE()
         {
             VALUE = 0;
+        }
+        public SEMAPHORE(int i)
+        {
+            VALUE = i;
         }
 
         public static void P()//jeżeli semafor bedzie niedodatni to wtedy następuje blokowanie procesu który jest w RUNNING

@@ -13,24 +13,31 @@ namespace Supervisor
 {
     public static class IBSUB
     {
-        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, METHOD, CREATE };
+        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, METHOD, CREATE };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_CREATE : byte { KOM, PCB };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM };
-        public enum wartosc_SEM : byte { MEMORY };
-        public enum wartosc_METHOD : byte { CZYSC_PODR };
+        public enum wartosc_SEM : byte { MEMORY, USER, WAIT, FSBSEM };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR };
         //Na samym początku Tworzy procesy *IN i *OUT
        
         //Poprzez Komunikację z Procesem *IN szuka karty (linijki) $JOB
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
-        /*0000*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.SEM,      (byte)wartosc_SEM.MEMORY,       //zapisanie semafora pamięci w 2 rejestrze
-        /*0003*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.P,                                        //wywołanie operacji P na semaforze w 2 rejestrze (semafor pamięci)
-        
-        /*0005*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R3,       (byte)wartosc_TYP.WART,1,0,     //wpisanie do rejestru wartości 8
-        /*000A*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.E,                                        //wywołanie operacji przydziału pamięci roboczej o wielkości określonej w rejestrze 3. Operacja zwraca adres pamięci roboczej w rejestrze 3.
-        
-        /*000C*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.V,                                        //wywołanie operacji V na semaforze w 2 rejestrze (semafor pamięci)
+        /*0000*/    /*(byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.SEM,      (byte)wartosc_SEM.MEMORY,*/       //zapisanie semafora pamięci w 2 rejestrze
+        /*0003*//*(byte)rozkaz.SVC,       (byte)wartosc_SVC.P,*/                                        //wywołanie operacji P na semaforze w 2 rejestrze (semafor pamięci)
+        /*0000*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,       (byte)wartosc_TYP.LR,
+                    (byte)rozkaz.ADD,       (byte)wartosc_TYP.WART,     11,
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R0,
+                    (byte)rozkaz.JUMPF,     (byte)wartosc_TYP.WART,     7,
+                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.A,
+                    1,0,0,0,4,
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,       (byte)wartosc_TYP.R2,
+                    (byte)rozkaz.ADD,       (byte)wartosc_TYP.WART,     2,
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R0,
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R3,       (byte)wartosc_TYP.MEM,
+
+
         
         /*000E*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,           //przepisanie adresu pamięci roboczej do rejestru 1
         /*0011*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
@@ -85,20 +92,21 @@ namespace Supervisor
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'D',
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'0',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)0,//
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'0',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)0,
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'0',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)0,
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'1',
-
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,       (byte)wartosc_TYP.R3,
+                (byte)rozkaz.ADD,       (byte)wartosc_TYP.WART,     32,
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.R0,
                 (byte)rozkaz.SVC,       (byte)wartosc_SVC.S,                                        //wysłanie komunikatu wskazywanego przez reg 2
 
                 (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.CZYSC_PODR, (byte)wartosc_TYP.R3, (byte)wartosc_TYP.WART, (byte)1, (byte)0,
 
-                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,8,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,32,
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.PRZYG_XR,  (byte)wartosc_TYP.R2, (byte)wartosc_TYP.WART, 32,
+        /**/    
 
         /*,"","","","",""*/};
 
@@ -120,6 +128,13 @@ namespace Supervisor
             {
                 Mem.MEMORY[adr + i] = 0;
             }
+        }
+
+        public static void przygXR(int adr, int dl)
+        {
+            int tmp = adr;
+            tmp += 8;
+            Mem.MEMORY[tmp] =(byte) dl;
         }
 
         
