@@ -34,6 +34,49 @@ namespace Process
             pomoc2_lancuch.NEXT_PCB_ALL = pomoc1_lancuch;
             pomoc2_lancuch.LAST_PCB_ALL = ostatni_lancuch;
         }
+        public static void XJ() //usuniecie bloku
+        {
+            //usuniecie z grupy
+            PCB pomoc1_grupa = zawiadowca.RUNNING;
+            PCB pomoc2_grupa = pomoc1_grupa.NEXT_PCB_GROUP;
+            PCB pomoc3_grupa = pomoc2_grupa.NEXT_PCB_GROUP;
+            PCB rejestr = (PCB)rejestry.r2;
+
+        start:
+            if (pomoc2_grupa == rejestr)
+            {
+                pomoc1_grupa.NEXT_PCB_GROUP = pomoc3_grupa;
+                Console.WriteLine("Usunieto z grupy blok PCB o nazwie " + rejestr.NAME);
+            }
+            else
+            {
+                pomoc1_grupa = pomoc1_grupa.NEXT_PCB_GROUP;
+                pomoc2_grupa = pomoc2_grupa.NEXT_PCB_GROUP;
+                pomoc3_grupa = pomoc3_grupa.NEXT_PCB_GROUP;
+                goto start;
+            }
+
+            //usuniecie z lancucha
+            PCB pomoc1_lancuch = zawiadowca.RUNNING;
+            PCB pomoc2_lancuch = pomoc1_grupa.NEXT_PCB_ALL;
+            PCB pomoc3_lancuch = pomoc2_grupa.NEXT_PCB_ALL;
+
+        start2:
+            if (pomoc2_grupa == rejestr)
+            {
+                pomoc1_grupa.NEXT_PCB_ALL = pomoc3_lancuch;
+                Console.WriteLine("Usunieto z lancucha blok PCB o nazwie " + rejestr.NAME);
+            }
+            else
+            {
+                pomoc1_lancuch = pomoc1_grupa.NEXT_PCB_ALL;
+                pomoc2_lancuch = pomoc2_grupa.NEXT_PCB_ALL;
+                pomoc3_lancuch = pomoc3_grupa.NEXT_PCB_ALL;
+                goto start2;
+            }
+
+
+        }
         
     }
 

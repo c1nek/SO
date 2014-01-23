@@ -13,12 +13,11 @@ namespace Supervisor
 {
     public static class IBSUB
     {
-        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, METHOD, CREATE };
+        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, JUMP, METHOD, FLAG };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
-        public enum wartosc_CREATE : byte { KOM, PCB };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM };
-        public enum wartosc_SEM : byte { MEMORY, USER, WAIT, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM };
+        public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN };
         //Na samym początku Tworzy procesy *IN i *OUT
        
         //Poprzez Komunikację z Procesem *IN szuka karty (linijki) $JOB
@@ -73,6 +72,8 @@ namespace Supervisor
         /*005A*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,0,       //wpisanie adresu uruchamianego programu (w tym wypadku *IN) jest to adres 256 + adres początku procesu *IBSUB
         /*005E*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,0,
         /*005E*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,                                        //uruchomienie procesu
+                    
+
 
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,           //przepisanie adresu pamięci roboczej do rejestru 1
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
@@ -101,13 +102,19 @@ namespace Supervisor
                 (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,       (byte)wartosc_TYP.R3,
                 (byte)rozkaz.ADD,       (byte)wartosc_TYP.WART,     32,
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.R0,
-                (byte)rozkaz.SVC,       (byte)wartosc_SVC.S,                                        //wysłanie komunikatu wskazywanego przez reg 2
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.S,                                        //wysłanie komunikatu wskazywanego przez reg 2 oczekiwanie na karte job pod adresem 32 pamięci roboczej
 
                 (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.CZYSC_PODR, (byte)wartosc_TYP.R3, (byte)wartosc_TYP.WART, (byte)1, (byte)0,
 
                 (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.PRZYG_XR,  (byte)wartosc_TYP.R2, (byte)wartosc_TYP.WART, 32,
                 (byte)rozkaz.SVC,       (byte)wartosc_SVC.R,
                 (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.INTER_KOM,
+
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,
+
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.SCAN,
+
+
                 
         /**/    
 
@@ -142,7 +149,65 @@ namespace Supervisor
 
         public static void interKom()
         {
+            int i = (int)rejestry.r2;
+            int j;
+            string nazwa=null;
+            string komunikat=null;
 
+            for (; i < (int)rejestry.r2+8; i++)
+            {
+
+                if (Mem.MEMORY[i] != 0)
+                {
+                    nazwa += (char)Mem.MEMORY[i];//???? nie wiem czy działa
+                }
+            }
+            if (nazwa != "*IN")
+            {
+                System.Console.WriteLine("Blad: zly nadawca. Oczekiwana wartosc to *IN. Otrzymano {0}", nazwa);
+                Console.ReadLine();
+                Environment.Exit(0);
+            }
+            int wielkosc = Mem.MEMORY[i];//wielkosc komunikatu
+            j = i;
+            for (; i < j + wielkosc; i++)
+            {
+                if (Mem.MEMORY[i] != 0)
+                {
+                    komunikat += (char)Mem.MEMORY[i];//???? nie wiem czy działa
+                }
+            }
+            if (komunikat != "OK")
+            {
+                System.Console.WriteLine("Blad: zly nadawca. Oczekiwana wartosc to *IN. Otrzymano {0}", nazwa);
+                Console.ReadLine();
+                Environment.Exit(0);
+            }
+            i = (int)rejestry.r2 +32;
+            if (Mem.MEMORY[i] != '$')
+            {
+                System.Console.WriteLine("Blad: inna karta. Oczekiwana wartosc to $JOB. Otrzymano {0}{1}{2}{3}", (char)Mem.MEMORY[i], (char)Mem.MEMORY[i+1], (char)Mem.MEMORY[i+2], (char)Mem.MEMORY[i+3]);//domyslnie powinien jeszcze raz czytać
+                Console.ReadLine();
+                Environment.Exit(0);
+            }
+            i += 32;//ustawienie na 64 bajt pamieci podr
+            rejestry.r2 = i;
+            Mem.MEMORY[i++] = (byte)'U';
+            Mem.MEMORY[i++] = (byte)'S';
+            Mem.MEMORY[i++] = (byte)'E';
+            Mem.MEMORY[i++] = (byte)'R';
+            Mem.MEMORY[i++] = (byte)'P';
+            Mem.MEMORY[i++] = (byte)'R';
+            Mem.MEMORY[i++] = (byte)'O';
+            Mem.MEMORY[i++] = (byte)'G';
+
+
+
+        }
+
+        public static void SCAN()
+        {
+            //schemat 7.9
         }
         
     }
@@ -164,6 +229,8 @@ namespace Supervisor
 
            IBSUB.zaladuj(256);
            IBSUB.zaladuj(1280);
+
+
 
            Mem.start();//całą pamięć wolną opisuje przy pomocy bloków FSB i wszystkie klucze ochrony ustawia na 0
 

@@ -6,18 +6,19 @@ using System.Threading.Tasks;
 using Memory;
 using Processor;
 using Supervisor;
+using External;
 //do dokończenia
 namespace Interpreter
 {
     public static class Inter
     {
-        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, METHOD, CREATE };
+        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, JUMP, METHOD, FLAG };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
-        public enum wartosc_CREATE : byte { KOM, PCB };
-        public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM };
-        public enum wartosc_SEM : byte { MEMORY, USER, WAIT, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM };
-        
+        public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM};
+        public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN };
+
+        public static byte[] LFlag = new byte[100];
 
         public static List<int> progAdr = new List<int>();
         
@@ -499,21 +500,153 @@ namespace Interpreter
                         rejestry.lr++;
                     }
                 }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.SEM)
+                {
+                    rejestry.lr++;
+                    if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SEM.MEMORY)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = Mem.MEMORY_SEM;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SEM.FSBSEM)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = Mem.FSBSEM;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SEM.COMMON)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = zawiadowca.RUNNING.MESSAGE_SEMAPHORE_COMMON;
+                        
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SEM.RECEIVER)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = zawiadowca.RUNNING.MESSAGE_SEMAPHORE_RECEIVER;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SEM.R2_COMMON)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = ((PCB)rejestry.r2).MESSAGE_SEMAPHORE_COMMON;
 
-                //MOV Gotowe (tylko R0,R1,R2,R3,LR,MEM,WART) bez sem
-                
-               
-            }
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SEM.R2_RECEIVER)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = ((PCB)rejestry.r2).MESSAGE_SEMAPHORE_RECEIVER;
+                    }
+                }
+            }//MOV Gotowe (tylko R0,R1,R2,R3,LR,MEM,WART) SEM gotowe
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.DIV)
             {
                 rejestry.lr++;
-                //dokończyć
-            }
+                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//ADD WART 
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= Mem.MEMORY[(int)rejestry.lr];
+                    rejestry.r0 = temp;
+                    rejestry.lr++;
+
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)//ADD MEM (wskazywana przez r1) 
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= Mem.MEMORY[(int)rejestry.r1];
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//ADD R0 dodaje akumulator do akumulatora (2*r0)
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r0;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//ADD R1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r1;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//ADD R2
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r2;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//ADD R3
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r3;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//ADD LR (dodaje licznik rozkazów po przesunięciu go na następna komórkę)
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.lr;
+                    rejestry.r0 = temp;
+                }
+            }//DIV gotowe
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.SUB)
             {
                 rejestry.lr++;
-                //dokończyć
-            }
+                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//ADD WART 
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= Mem.MEMORY[(int)rejestry.lr];
+                    rejestry.r0 = temp;
+                    rejestry.lr++;
+
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)//ADD MEM (wskazywana przez r1) 
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= Mem.MEMORY[(int)rejestry.r1];
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//ADD R0 dodaje akumulator do akumulatora (2*r0)
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.r0;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//ADD R1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.r1;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//ADD R2
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.r2;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//ADD R3
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.r3;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//ADD LR (dodaje licznik rozkazów po przesunięciu go na następna komórkę)
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.lr;
+                    rejestry.r0 = temp;
+                }
+            }//SUB gotowe
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.INC) 
             {
                 rejestry.lr++;
@@ -560,12 +693,53 @@ namespace Interpreter
                     Mem.MEMORY[(int)rejestry.r1] = temp;
                 }
                 
-            }
+            }//INC gotowe
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.DEC)
             {
                 rejestry.lr++;
-                //dokończyć
-            }
+                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//zwiększa akumulator o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp--;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//zwiększa rejestr 1 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r1;
+                    temp--;
+                    rejestry.r1 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//zwiększa rejestr 2 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r2;
+                    temp--;
+                    rejestry.r2 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//zwiększa rejestr 3 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r3;
+                    temp--;
+                    rejestry.r3 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//zwiększa rejestr lr o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.lr;
+                    temp--;
+                    rejestry.lr = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)//zwiększa komórkę pamięci wksazywaną przez r1 o 1
+                {
+                    rejestry.lr++;
+                    byte temp = Mem.MEMORY[(int)rejestry.r1];
+                    temp--;
+                    Mem.MEMORY[(int)rejestry.r1] = temp;
+                }
+            }//DEC gotowe
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JUMPF)
             {
                 rejestry.lr++;
@@ -577,7 +751,7 @@ namespace Interpreter
                 }
                 
                 //skacze w przód
-            }
+            }//JUMPF gotowe
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JUMPR)
             {
                 rejestry.lr++;
@@ -588,7 +762,7 @@ namespace Interpreter
                     rejestry.lr++;
                 }
                 //skacze w tył
-            }
+            }//JUMPR gotowe
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.METHOD)
             {
                 rejestry.lr++;
@@ -662,9 +836,42 @@ namespace Interpreter
                     rejestry.lr++;
                     IBSUB.interKom();
                 }
-                
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.SPRAWDZENIE)
+                {
+                    rejestry.lr++;
+                    Ext.SPRAWDZENIE();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.CZYTNIK)
+                {
+                    rejestry.lr++;
+                    Ext.CZYTNIK(Ext.com,Ext.adres,Ext.il_danych);
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.SCAN)
+                {
+                    rejestry.lr++;
+                    IBSUB.SCAN();
+                }
                 //dokończyć
-            }
+            }//METHOD do zrobienia dodać sprawdzenie i czytnik
+
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.FLAG)
+            {
+                rejestry.lr++;
+                int tmp = Mem.MEMORY[rejestry.lr];
+                rejestry.lr++;
+                LFlag[tmp] = (byte)rejestry.lr;
+
+            }//FLAG działa
+
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JUMP)
+            {
+                rejestry.lr++;
+                if((int)rejestry.r0==0)
+                rejestry.lr=LFlag[(int)Mem.MEMORY[rejestry.lr]];
+                else
+                rejestry.lr++;
+            }//JUMP przy r0==0 do flagi działa
+
 
         }
     }

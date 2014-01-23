@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Interpreter;
 using Process;
+using External;
+
 namespace Processor
 {
     public static class zawiadowca
@@ -60,12 +62,13 @@ namespace Processor
         public PCB LAST_PCB_ALL;
         public PCB NEXT_PCB_GROUP;
         public PCB LAST_PCB_GROUP;
+        public UCB blokExt;
         public SEMAPHORE MESSAGE_SEMAPHORE_COMMON;
         public SEMAPHORE MESSAGE_SEMAPHORE_RECEIVER;
         public PCB NEXT_SEMAPHORE_WAITER;
         public MESSAGE FIRST_MESSAGE;
         public int adres_pocz;
-        public object[] cpu_stan = new object[6];
+        public object[] cpu_stan = new object[12];
 
         public void cpu_stan_zapisz()
         {
@@ -75,6 +78,14 @@ namespace Processor
             cpu_stan[3] = rejestry.r3;
             cpu_stan[4] = rejestry.lr;
             cpu_stan[5] = rejestry.ab;
+            cpu_stan[6] = rejestry.r4;
+            cpu_stan[7] = rejestry.r5;
+            cpu_stan[8] = rejestry.r6;
+            cpu_stan[9] = rejestry.r7;
+            cpu_stan[10] = rejestry.r8;
+            cpu_stan[11] = rejestry.r9;
+
+
         }
 
         public void cpu_stan_laduj()
@@ -85,6 +96,12 @@ namespace Processor
             rejestry.r3 = cpu_stan[3];
             rejestry.lr = (int)cpu_stan[4];
             rejestry.ab = (bool)cpu_stan[5];
+            rejestry.r4 = (Int16)cpu_stan[6];
+            rejestry.r5 = (Int16)cpu_stan[7];
+            rejestry.r6 = (Int16)cpu_stan[8];
+            rejestry.r7 = (Int16)cpu_stan[9];
+            rejestry.r8 = (Int16)cpu_stan[10];
+            rejestry.r9 = (Int16)cpu_stan[11];
         }
 
         public PCB(string name, int adres)
@@ -99,6 +116,8 @@ namespace Processor
             LAST_PCB_ALL = null;
             NEXT_PCB_GROUP = null;
             LAST_PCB_GROUP = null;
+            MESSAGE_SEMAPHORE_COMMON=new SEMAPHORE(1);
+            MESSAGE_SEMAPHORE_RECEIVER=new SEMAPHORE(1);
             adres_pocz = adres;
         }
     }
@@ -109,6 +128,12 @@ namespace Processor
         public static object r1;
         public static object r2;
         public static object r3;
+        public static Int16 r4;
+        public static Int16 r5;
+        public static Int16 r6;
+        public static Int16 r7;
+        public static Int16 r8;
+        public static Int16 r9;
         public static int lr;    //licznik rozkazów
         public static bool ab;  //adresowanie bezwzględne
 
