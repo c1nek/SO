@@ -18,13 +18,10 @@ namespace Supervisor
         public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
         public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN };
-        //Na samym początku Tworzy procesy *IN i *OUT
        
-        //Poprzez Komunikację z Procesem *IN szuka karty (linijki) $JOB
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
-        /*0000*/    /*(byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.SEM,      (byte)wartosc_SEM.MEMORY,*/       //zapisanie semafora pamięci w 2 rejestrze
-        /*0003*//*(byte)rozkaz.SVC,       (byte)wartosc_SVC.P,*/                                        //wywołanie operacji P na semaforze w 2 rejestrze (semafor pamięci)
+        
         /*0000*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,       (byte)wartosc_TYP.LR,
                     (byte)rozkaz.ADD,       (byte)wartosc_TYP.WART,     11,
                     (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R0,
@@ -138,6 +135,7 @@ namespace Supervisor
             {
                 Mem.MEMORY[adr + i] = 0;
             }
+            rejestry.r8 = (Int16)(int)rejestry.r3;//zapisanie roczatku pamięci roboczej do 8 rejestru
         }
 
         public static void przygXR(int adr, int dl)
@@ -207,6 +205,7 @@ namespace Supervisor
 
         public static void SCAN()
         {
+
             //schemat 7.9
         }
         
