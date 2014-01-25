@@ -206,12 +206,14 @@ namespace External
 
         }
 
-        public static void zaladuj(int m)
+        public static int zaladuj(int m)
         {
-            for (int i = 0; i < mem.Length; i++)
+            int i;
+            for (i = 0; i < mem.Length; i++)
             {
                 Mem.MEMORY[i + m] = mem[i];
             }
+            return i + 1;
         }
 
 

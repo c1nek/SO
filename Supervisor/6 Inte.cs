@@ -12,15 +12,21 @@ namespace Interpreter
 {
     public static class Inter
     {
-        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, JUMP, METHOD, FLAG };
+        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, JUMP, METHOD, FLAG, POWROT };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM};
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN ,PRZESZUKAJ_LISTE, PODRECZNA};
+        public enum Eprog : byte { IBSUB, IN, OUT=1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
+
 
         public static byte[] LFlag = new byte[100];
 
         public static List<int> progAdr = new List<int>();
+
+        private static Stack<int> stos = new Stack<int>();
+
+        private static int[] prog = new int[100];
         
 
 
@@ -50,14 +56,15 @@ namespace Interpreter
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.A)
                 {
-                    
-                //to musi sie odbyć przez przesunięcie lr
-                    //wywołaj metode A klasy Mem 
+                    rejestry.lr++;
+                    stos.Push(rejestry.lr);
+                    rejestry.lr = prog[(int)Eprog.A];
+                
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.E)
                 {
-                    //to musi się odbys przez przesunięcie licznika rozkazów
-                    //wywołaj metode E klasy Mem
+                    rejestry.lr++;
+                    rejestry.r9 = 0;
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.F)
                 {
@@ -112,7 +119,7 @@ namespace Interpreter
                 {
                     //wywołaj metode Q klasy Proc
                 }
-            }//SVC do dokończenia (brak wywołań)
+            }//SVC do dokończenia (brak wywołań) dodanie do stosu licznika rozkazów
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.ADD)
             {
                 rejestry.lr++;
@@ -536,7 +543,7 @@ namespace Interpreter
                         rejestry.r2 = ((PCB)rejestry.r2).MESSAGE_SEMAPHORE_RECEIVER;
                     }
                 }
-            }//MOV Gotowe (tylko R0,R1,R2,R3,LR,MEM,WART) SEM gotowe
+            }//MOV Gotowe (tylko R0,R1,R2,R3,LR,MEM,WART) SEM gotowe, dodac rejestry
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.DIV)
             {
                 rejestry.lr++;
@@ -851,6 +858,17 @@ namespace Interpreter
                     rejestry.lr++;
                     IBSUB.SCAN();
                 }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.PRZESZUKAJ_LISTE)
+                {
+                    rejestry.lr++;
+                    Mem.PRZESZUKAJ_LISTE();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.PODRECZNA)
+                {
+                    rejestry.lr++;
+                    Mem.PODRECZNA();
+                }
+                
                 //dokończyć
             }//METHOD do zrobienia dodać sprawdzenie i czytnik
 
@@ -871,6 +889,11 @@ namespace Interpreter
                 else
                 rejestry.lr++;
             }//JUMP przy r0==0 do flagi działa
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.POWROT)
+            {
+                rejestry.lr++;
+                //odczytanie ze stosu licznika rozkazów i go ustawienie
+            }
 
 
         }

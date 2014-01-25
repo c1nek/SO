@@ -18,7 +18,7 @@ namespace Supervisor
         public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
         public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN };
-       
+        public enum Eprog : byte { IBSUB, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
         
@@ -33,6 +33,7 @@ namespace Supervisor
                     (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R0,
                     (byte)rozkaz.MOV,       (byte)wartosc_TYP.R3,       (byte)wartosc_TYP.MEM,
 
+                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.E,
 
         
         /*000E*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,           //przepisanie adresu pamięci roboczej do rejestru 1
@@ -121,12 +122,14 @@ namespace Supervisor
 
 
 
-        public static void zaladuj(int m)
+        public static int zaladuj(int m)
         {
-            for (int i = 0; i < mem.Length; i++)
+            int i;
+            for (i = 0; i < mem.Length; i++)
             {
                 Mem.MEMORY[i+m] = mem[i];
             }
+            return i + 1;
         }
 
         public static void czyscPodr(int adr, int rozmiar)
@@ -211,48 +214,147 @@ namespace Supervisor
         
     }
 
+    /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
    static public class IPLRTN
    {
-       static void Main()
+       public static int[] adrProg = new int[25];
+
+       public static void CWrite(ConsoleColor color, string text)
        {
-          
+           ConsoleColor originalColor = Console.ForegroundColor;
+           Console.ForegroundColor = color;
+           Console.Write(text);
+           Console.ForegroundColor = originalColor;
+       }
+
+       public static int Main()
+       {
+
            //tworzy swój PCB dodaje go na listę ustaiwa wszystkie wartości by wskazywały na niego
-           PCB iplrtn = new PCB("*IPRTLN",0);
-           rejestry.r2=iplrtn;
+           PCB iplrtn = new PCB("*IPRTLN", 0);
+           rejestry.r2 = iplrtn;
            zawiadowca.RUNNING = iplrtn;
            zawiadowca.NEXTTRY = iplrtn;
            iplrtn.LAST_PCB_ALL = iplrtn;
            iplrtn.LAST_PCB_GROUP = iplrtn;
            iplrtn.NEXT_PCB_ALL = iplrtn;
            iplrtn.NEXT_PCB_GROUP = iplrtn;
+           iplrtn.STOPPED = true;
+           Console.Write("Start programu"); CWrite(ConsoleColor.Cyan, " IPLRTN\n");
+           Console.ReadLine();
+           Console.WriteLine("Wczytuję jądro systemu do pamięci");
+           Console.ReadLine();
 
-           IBSUB.zaladuj(256);
-           IBSUB.zaladuj(1280);
+           int i = 0;
+           int j = 0;
 
+           adrProg[j++] = i;
+           i = IBSUB.zaladuj(0);
+           CWrite(ConsoleColor.Cyan, "IBSUB");
+           Console.Write(" - wczytano");
+           Console.ReadLine();
 
+           adrProg[j++] = i;
+           i = Ext.zaladuj(i);
+           CWrite(ConsoleColor.Cyan, "EXT ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
 
-           Mem.start();//całą pamięć wolną opisuje przy pomocy bloków FSB i wszystkie klucze ochrony ustawia na 0
+           adrProg[j++] = i;
+           i = Proc.zaladujXC(i);
+           CWrite(ConsoleColor.Cyan, "XC ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
 
-           PCB ibsub1 = new PCB("*IBSUB",100);
+           adrProg[j++] = i;
+           i = Proc.zaladujXD(i);
+           CWrite(ConsoleColor.Cyan, "XD ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
+
+           adrProg[j++] = i;
+           i = Proc.zaladujXH(i);
+           CWrite(ConsoleColor.Cyan, "XH ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
+
+           adrProg[j++] = i;
+           i = Proc.zaladujXN(i);
+           CWrite(ConsoleColor.Cyan, "XN ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
+
+           adrProg[j++] = i;
+           i = Proc.zaladujXR(i);
+           CWrite(ConsoleColor.Cyan, "XR ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
+
+           adrProg[j++] = i;
+           i = Proc.zaladujXS(i);
+           CWrite(ConsoleColor.Cyan, "XS ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
+
+           adrProg[j++] = i;
+           i = Proc.zaladujXY(i);
+           CWrite(ConsoleColor.Cyan, "XY ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
+
+           adrProg[j++] = i;
+           i = Proc.zaladujXZ(i);
+           CWrite(ConsoleColor.Cyan, "XZ ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
+
+           adrProg[j++] = i;
+           i = Proc.zaladujXQUE(i);
+           CWrite(ConsoleColor.Cyan, "XQUE ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
+
+           Console.Write("Opisuję wolną pamięć przy pomocy bloków FSB");
+           if (Mem.start(i) == false) //całą pamięć wolną opisuje przy pomocy bloków FSB i wszystkie klucze ochrony ustawia na 0
+           {
+               Console.Write(" - ");
+               CWrite(ConsoleColor.Red, "BŁĄD!");
+               Console.ReadLine();
+               return 0;
+           }
+           else
+           {
+               Console.Write(" - wykonano");
+               Console.ReadLine();
+           }
+
+           Console.Write("Tworzenie PCB dla pierwszego strumienia zlecień");
+           Console.ReadLine();
+           PCB ibsub1 = new PCB("*IBSUB", 0);
            ibsub1.cpu_stan[0] = 0;
            ibsub1.cpu_stan[1] = 0;
            ibsub1.cpu_stan[2] = 0;
            ibsub1.cpu_stan[3] = 0;
-           ibsub1.cpu_stan[4] = 256;
+           ibsub1.cpu_stan[4] = adrProg[(int)Interpreter.Inter.Eprog.IBSUB];
 
-           PCB ibsub2 = new PCB("*IBSUB",100);
+           Console.Write("Tworzenie PCB dla drugiego strumienia zlecień");
+           Console.ReadLine();
+
+           PCB ibsub2 = new PCB("*IBSUB", 0);
            ibsub2.cpu_stan[0] = 0;
            ibsub2.cpu_stan[1] = 0;
            ibsub2.cpu_stan[2] = 0;
            ibsub2.cpu_stan[3] = 0;
-           ibsub2.cpu_stan[4] = 1280;
+           ibsub2.cpu_stan[4] = adrProg[(int)Interpreter.Inter.Eprog.IBSUB];
 
+           Console.Write("Ustawianie wskazników we wszystkich PCB");
+           Console.ReadLine();
            iplrtn.NEXT_PCB_ALL = ibsub1;
-           iplrtn.LAST_PCB_ALL = ibsub2;
-           
+
            ibsub1.NEXT_PCB_ALL = ibsub2;
            ibsub2.NEXT_PCB_ALL = iplrtn;
-           
+
            ibsub1.LAST_PCB_ALL = iplrtn;
            ibsub2.LAST_PCB_ALL = iplrtn;
 
@@ -262,10 +364,18 @@ namespace Supervisor
            ibsub1.LAST_PCB_GROUP = ibsub1;
            ibsub2.LAST_PCB_GROUP = ibsub2;
 
+           Console.Write("Ustawienie NEXTTRY i wymuszenie zmiany procesu");
+           Console.ReadLine();
 
-           //Tworzy procesy IBSUB dla każdego strumienia zleceń (2x)
-           //Korzysta z interpretera
-           
+           zawiadowca.NEXTTRY = iplrtn.NEXT_PCB_ALL;
+           zawiadowca.wymusZmiane = true;
+
+           Console.Write("Urucomienie");
+           CWrite(ConsoleColor.Green, " zawiadowcy\n");
+           Console.ReadLine();
+
+           zawiadowca.Run();
+
        }
    }
 }

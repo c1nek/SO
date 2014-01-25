@@ -11,11 +11,12 @@ namespace Memory
     
     public static class Mem
     {
-        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, JUMP, METHOD, FLAG };
+        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, JUMP, METHOD, FLAG, POWROT };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA };
+        public enum Eprog : byte { IBSUB, IN, OUT, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
 
 
 
@@ -37,9 +38,21 @@ namespace Memory
         {
 
         }
-        public static void start()
+
+        public static void PRZESZUKAJ_LISTE()
+        {
+ 
+        }
+
+        public static void PODRECZNA()
+        {
+ 
+        }
+
+        public static bool start(int i)
         {
             //create FSB blocks (called only once by IPLRTN)
+            return true;
         }
     }
 

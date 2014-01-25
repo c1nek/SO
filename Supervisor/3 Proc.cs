@@ -4,16 +4,143 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Processor;
+using Memory;
 
 namespace Process
 {
     public static class Proc
     {
 
-        public static void XC()
+        public static byte[] XC = new byte[]
         {
 
+        };
+        public static int zaladujXC(int m)
+        {
+            int i;
+            for (i = 0; i < XC.Length; i++)
+            {
+                Mem.MEMORY[i + m] = XC[i];
+            }
+            return i + 1;
         }
+
+        public static byte[] XD = new byte[]
+        {
+
+        };
+        public static int zaladujXD(int m)
+        {
+            int i;
+            for (i = 0; i < XD.Length; i++)
+            {
+                Mem.MEMORY[i + m] = XD[i];
+            }
+            return i + 1;
+        }
+
+
+        public static byte[] XH = new byte[]//tego raczej nie robimy
+        {
+
+        };
+        public static int zaladujXH(int m)
+        {
+            int i;
+            for (i = 0; i < XH.Length; i++)
+            {
+                Mem.MEMORY[i + m] = XH[i];
+            }
+            return i + 1;
+        }
+
+        public static byte[] XN = new byte[]//tego raczej nie robimy znajdowanie bloku po nazwie. Jeżeli robimy to trzeba rozszerzyć interpreter oraz utworzyć klasę z polem string otaz polem PCB
+        {
+
+        };
+        public static int zaladujXN(int m)
+        {
+            int i;
+            for (i = 0; i < XN.Length; i++)
+            {
+                Mem.MEMORY[i + m] = XN[i];
+            }
+            return i + 1;
+        }
+
+        public static byte[] XR = new byte[]
+        {
+
+        };
+        public static int zaladujXR(int m)
+        {
+            int i;
+            for (i = 0; i < XR.Length; i++)
+            {
+                Mem.MEMORY[i + m] = XR[i];
+            }
+            return i + 1;
+        }
+
+        public static byte[] XS = new byte[]
+        {
+
+        };
+        public static int zaladujXS(int m)
+        {
+            int i;
+            for (i = 0; i < XS.Length; i++)
+            {
+                Mem.MEMORY[i + m] = XS[i];
+            }
+            return i + 1;
+        }
+
+        public static byte[] XY = new byte[]
+        {
+
+        };
+        public static int zaladujXY(int m)
+        {
+            int i;
+            for (i = 0; i < XY.Length; i++)
+            {
+                Mem.MEMORY[i + m] = XY[i];
+            }
+            return i + 1;
+        }
+
+        public static byte[] XZ = new byte[]
+        {
+
+        };
+        public static int zaladujXZ(int m)
+        {
+            int i;
+            for (i = 0; i < XZ.Length; i++)
+            {
+                Mem.MEMORY[i + m] = XZ[i];
+            }
+            return i + 1;
+        }
+
+        public static byte[] XQUE = new byte[]
+        {
+
+        };
+
+        public static int zaladujXQUE(int m)
+        {
+            int i;
+            for (i = 0; i < XQUE.Length; i++)
+            {
+                Mem.MEMORY[i + m] = XQUE[i];
+            }
+            return i + 1;
+        }
+
+
+
         public static void XI()
         {
             //dolaczanie do grupy
@@ -34,6 +161,7 @@ namespace Process
             pomoc2_lancuch.NEXT_PCB_ALL = pomoc1_lancuch;
             pomoc2_lancuch.LAST_PCB_ALL = ostatni_lancuch;
         }
+
         public static void XJ() //usuniecie bloku
         {
             //usuniecie z grupy
@@ -77,6 +205,8 @@ namespace Process
 
 
         }
+
+
         
     }
 
