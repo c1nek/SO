@@ -11,16 +11,132 @@ namespace Processor
 {
     public static class zawiadowca
     {
+        private static void CWrite(ConsoleColor color, string text)
+        {
+            ConsoleColor originalColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.Write(text);
+            Console.ForegroundColor = originalColor;
+        }
+
+        private static void CWrite(ConsoleColor color, int text)
+        {
+            ConsoleColor originalColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.Write(text);
+            Console.ForegroundColor = originalColor;
+        }
+
+        private static void LicznikWrite()
+        {
+            int kolumnaOrg = Console.CursorLeft;
+            int wierszOrg = Console.CursorTop;
+            Console.CursorLeft = 80;
+            Console.CursorTop = 0;
+            Console.Write("LZ: ");
+            CWrite(ConsoleColor.Magenta,licznik);
+            Console.CursorLeft = kolumnaOrg;
+            Console.CursorTop = wierszOrg;
+        }
+
+        private static void RejestyWrite()
+        {
+            int kolumnaOrg = Console.CursorLeft;
+            int wierszOrg = Console.CursorTop;
+            Console.CursorLeft = 80;
+            Console.CursorTop = 1;
+            Console.Write("R0: ");
+            if(rejestry.r0 is int)
+                CWrite(ConsoleColor.Magenta, (int)rejestry.r0);
+            else if(rejestry.r0 is PCB)
+                CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r0).NAME);
+            else if(rejestry.r0 is SEMAPHORE)
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r0).ToString());
+            else
+                CWrite(ConsoleColor.Magenta, "inne");
+            Console.CursorLeft = 80;
+            Console.CursorTop = 2;
+            Console.Write("R1: ");
+            if (rejestry.r1 is int)
+                CWrite(ConsoleColor.Magenta, (int)rejestry.r1);
+            else if (rejestry.r1 is PCB)
+                CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r1).NAME);
+            else if (rejestry.r1 is SEMAPHORE)
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r1).ToString());
+            else
+                CWrite(ConsoleColor.Magenta, "inne");
+            Console.CursorLeft = 80;
+            Console.CursorTop = 3;
+            Console.Write("R2: ");
+            if(rejestry.r2 is int)
+                CWrite(ConsoleColor.Magenta, (int)rejestry.r2);
+            else if(rejestry.r2 is PCB)
+                CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r2).NAME);
+            else if(rejestry.r2 is SEMAPHORE)
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r2).ToString());
+            else
+                CWrite(ConsoleColor.Magenta, "inne");
+            Console.CursorLeft = 80;
+            Console.CursorTop = 4;
+            Console.Write("R3: ");
+            if(rejestry.r3 is int)
+                CWrite(ConsoleColor.Magenta, (int)rejestry.r3);
+            else if(rejestry.r3 is PCB)
+                CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r3).NAME);
+            else if(rejestry.r3 is SEMAPHORE)
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r3).ToString());
+            else
+                CWrite(ConsoleColor.Magenta, "inne");
+            Console.CursorLeft = 80;
+            Console.CursorTop = 5;
+            Console.Write("R4: ");
+            CWrite(ConsoleColor.Magenta, (int)rejestry.r4);
+            Console.CursorLeft = 80;
+            Console.CursorTop = 6;
+            Console.Write("R5: ");
+            CWrite(ConsoleColor.Magenta, (int)rejestry.r5);
+            Console.CursorLeft = 80;
+            Console.CursorTop = 7;
+            Console.Write("R6: ");
+            CWrite(ConsoleColor.Magenta, (int)rejestry.r6);
+            Console.CursorLeft = 80;
+            Console.CursorTop = 8;
+            Console.Write("R7: ");
+            CWrite(ConsoleColor.Magenta, (int)rejestry.r7);
+            Console.CursorLeft = 80;
+            Console.CursorTop = 9;
+            Console.Write("R8: ");
+            CWrite(ConsoleColor.Magenta, (int)rejestry.r8);
+            Console.CursorLeft = 80;
+            Console.CursorTop = 10;
+            Console.Write("R9: ");
+            CWrite(ConsoleColor.Magenta, (int)rejestry.r9);
+            Console.CursorLeft = 80;
+            Console.CursorTop = 11;
+            Console.Write("LR: ");
+            CWrite(ConsoleColor.Magenta, (int)rejestry.lr);
+
+            Console.CursorLeft = kolumnaOrg;
+            Console.CursorTop = wierszOrg;
+        }
+
         public static PCB RUNNING = null;
         public static PCB NEXTTRY = null;
         public static bool NEXTTRY_MODIFIED = false;
         public static bool wymusZmiane = false;
         private static int licznik = 0;
+
+
         public static void Run()
         {
             while (true)
             {
-                licznik++;
+                LicznikWrite();//wypisanie aktualnej wartości licznka zawiadowcy
+                RejestyWrite();
+
+                CWrite(ConsoleColor.Green, "Zawiadowca");
+                Console.ReadLine();
+
                 if (licznik == 50 || wymusZmiane)
                 {
                     wymusZmiane = false;
@@ -43,6 +159,7 @@ namespace Processor
                     }
                 }
                 Inter.Run();
+                licznik++;
             }
         }
 
@@ -124,18 +241,18 @@ namespace Processor
 
     public static  class rejestry
     {
-        public static object r0; //akumulator
-        public static object r1;
-        public static object r2;
-        public static object r3;
-        public static Int16 r4;
-        public static Int16 r5;
-        public static Int16 r6;
-        public static Int16 r7;
-        public static Int16 r8;
-        public static Int16 r9;
-        public static int lr;    //licznik rozkazów
-        public static bool ab;  //adresowanie bezwzględne
+        public static object r0 = 0; //akumulator
+        public static object r1 = 0;
+        public static object r2 = 0;
+        public static object r3 = 0;
+        public static Int16 r4 = 0;
+        public static Int16 r5 = 0;
+        public static Int16 r6 = 0;
+        public static Int16 r7 = 0;
+        public static Int16 r8 = 0;
+        public static Int16 r9 = 0;
+        public static int lr = 0;    //licznik rozkazów
+        public static bool ab = false;  //adresowanie bezwzględne
 
 
 

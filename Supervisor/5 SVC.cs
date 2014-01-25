@@ -228,8 +228,15 @@ namespace Supervisor
            Console.ForegroundColor = originalColor;
        }
 
-       public static int Main()
+       public static void Main()
        {
+
+           Console.WindowHeight = 50;
+           Console.WindowWidth = 100;
+           Console.BufferWidth = 100;
+           Console.BufferHeight = 50;
+           Console.WindowTop = 0;
+           Console.WindowLeft = 0;
 
            //tworzy swój PCB dodaje go na listę ustaiwa wszystkie wartości by wskazywały na niego
            PCB iplrtn = new PCB("*IPRTLN", 0);
@@ -241,9 +248,10 @@ namespace Supervisor
            iplrtn.NEXT_PCB_ALL = iplrtn;
            iplrtn.NEXT_PCB_GROUP = iplrtn;
            iplrtn.STOPPED = true;
+
            Console.Write("Start programu"); CWrite(ConsoleColor.Cyan, " IPLRTN\n");
            Console.ReadLine();
-           Console.WriteLine("Wczytuję jądro systemu do pamięci");
+           Console.WriteLine("Wczytywanie jądra systemu do pamięci");
            Console.ReadLine();
 
            int i = 0;
@@ -315,13 +323,13 @@ namespace Supervisor
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           Console.Write("Opisuję wolną pamięć przy pomocy bloków FSB");
+           Console.Write("Opisywanie wolnej pamięci przy pomocy bloków FSB");
            if (Mem.start(i) == false) //całą pamięć wolną opisuje przy pomocy bloków FSB i wszystkie klucze ochrony ustawia na 0
            {
                Console.Write(" - ");
                CWrite(ConsoleColor.Red, "BŁĄD!");
                Console.ReadLine();
-               return 0;
+               return;
            }
            else
            {
@@ -370,7 +378,7 @@ namespace Supervisor
            zawiadowca.NEXTTRY = iplrtn.NEXT_PCB_ALL;
            zawiadowca.wymusZmiane = true;
 
-           Console.Write("Urucomienie");
+           Console.Write("Uruchomienie");
            CWrite(ConsoleColor.Green, " zawiadowcy\n");
            Console.ReadLine();
 

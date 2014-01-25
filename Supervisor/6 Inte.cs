@@ -27,11 +27,21 @@ namespace Interpreter
         private static Stack<int> stos = new Stack<int>();
 
         private static int[] prog = new int[100];
-        
 
+        private static void CWrite(ConsoleColor color, string text)
+        {
+            ConsoleColor originalColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.Write(text);
+            Console.ForegroundColor = originalColor;
+        }
 
         public static void Run()
         {
+
+            CWrite(ConsoleColor.Green, "Interpreter");
+            Console.ReadLine();
+
             if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.SVC)
             {
                 rejestry.lr++;
