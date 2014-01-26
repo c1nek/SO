@@ -7,3 +7,5 @@ SVC P - (metoda) przyjmuje w rejestrze 2 referencje na semafor. Wcześniej trzeb
 SVC V - (metoda) przyjmuje w rejestrze 2 referencje na semafor. Wcześniej trzeba użyć MOV, SEM. sem ++ Jeżeli sem<=0 odblokowuje pierwszy proces i ustawia na niego wskazniki NEXTTRY.
 
 SVC E - (w tablicy bajtów) przydział pamięci podręcznej 256 bajtów i zwrócenie adresu w rejestrze 3
+
+SVC Y, Eprog - (w tablicy bajtów), Eprog oznacza adres komórki z tablicy IPLRTN.adrProg zawierające początkowy adres programu
