@@ -213,7 +213,7 @@ namespace External
             {
                 Mem.MEMORY[i + m] = mem[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
 

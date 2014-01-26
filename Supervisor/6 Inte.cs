@@ -12,21 +12,17 @@ namespace Interpreter
 {
     public static class Inter
     {
-        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, JUMP, METHOD, FLAG, POWROT };
+        public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
-        public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM};
+        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM};
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
         public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN ,PRZESZUKAJ_LISTE, PODRECZNA};
         public enum Eprog : byte { IBSUB, IN, OUT=1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
 
 
-        public static byte[] LFlag = new byte[100];
+        public static byte[] LFlag = new byte[100];//tablica adresów flag
 
-        public static List<int> progAdr = new List<int>();
-
-        private static Stack<int> stos = new Stack<int>();
-
-        private static int[] prog = new int[100];
+        private static Stack<int> stos = new Stack<int>();//stos wywołań programów
 
         private static void CWrite(ConsoleColor color, string text)
         {
@@ -34,7 +30,15 @@ namespace Interpreter
             Console.ForegroundColor = color;
             Console.Write(text);
             Console.ForegroundColor = originalColor;
-        }
+        }//kolorowanie tekstu
+
+        //(MOV, R0|R1|R2|R3|LR, R0|R1|R2|R3|LR) kopiuje wartośc do pierwszego rejestru z drugiego (MOV, pierwszy_rejestr, drugi_rejestr)
+        //(MOV, R0|R1|R2|R3|LR, WART, <starszy bajt>, <młodszy bajt>) kopiuje wartość do rejestrów określoną po WART, (rejestry są dwubajtowe)
+        //(MOV, MEM, R0|R1|R2|R3|LR) kopiuje wartość rejestru do dwóch następujących po sobie komórek pamięci , adres pierwszej komórki w R1
+        //(MOV, MEM, WART, <wartosć>) kopiuje do komórki pamięci wartość po WART, adres komórki w R1
+        //(MOV, SEM, MEMORY|COMMON|RECEIVER|R2_COMMON|R2_RECEIVER|FSBSEM) Ustaiwa referencję na semafor w rejestrze 2, R2_* ustawia referencje na semafor w rejestrze 2, z bloku pcb wskazywanego przez r2
+
+        /// //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         public static void Run()
         {
@@ -68,7 +72,7 @@ namespace Interpreter
                 {
                     rejestry.lr++;
                     stos.Push(rejestry.lr);
-                    rejestry.lr = prog[(int)Eprog.A];
+                    rejestry.lr = IPLRTN.adrProg[(int)Eprog.A];
                 
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.E)
@@ -130,64 +134,6 @@ namespace Interpreter
                     //wywołaj metode Q klasy Proc
                 }
             }//SVC do dokończenia (brak wywołań) dodanie do stosu licznika rozkazów
-            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.ADD)
-            {
-                rejestry.lr++;
-                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//ADD WART 
-                {
-                    rejestry.lr++;
-                    int temp = (int)rejestry.r0;
-                    temp += Mem.MEMORY[(int)rejestry.lr];
-                    rejestry.r0 = temp;
-                    rejestry.lr++;
-
-                }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)//ADD MEM (wskazywana przez r1) 
-                {
-                    rejestry.lr++;
-                    int temp = (int)rejestry.r0;
-                    temp += Mem.MEMORY[(int)rejestry.r1];
-                    rejestry.r0 = temp;
-                }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//ADD R0 dodaje akumulator do akumulatora (2*r0)
-                {
-                    rejestry.lr++;
-                    int temp = (int)rejestry.r0;
-                    temp += (int)rejestry.r0;
-                    rejestry.r0 = temp;
-                }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//ADD R1
-                {
-                    rejestry.lr++;
-                    int temp = (int)rejestry.r0;
-                    temp += (int)rejestry.r1;
-                    rejestry.r0 = temp;
-                }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//ADD R2
-                {
-                    rejestry.lr++;
-                    int temp = (int)rejestry.r0;
-                    temp += (int)rejestry.r2;
-                    rejestry.r0 = temp;
-                }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//ADD R3
-                {
-                    rejestry.lr++;
-                    int temp = (int)rejestry.r0;
-                    temp += (int)rejestry.r3;
-                    rejestry.r0 = temp;
-                }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//ADD LR (dodaje licznik rozkazów po przesunięciu go na następna komórkę)
-                {
-                    rejestry.lr++;
-                    int temp = (int)rejestry.r0;
-                    temp += (int)rejestry.lr;
-                    rejestry.r0 = temp;
-                }
-
-                //dokończyć
-
-            }//ADD gotowe
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.MOV)
             {
                 rejestry.lr++;
@@ -233,6 +179,36 @@ namespace Interpreter
                         rejestry.lr++;
                         rejestry.r0 = rejestry.lr;
                     }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+                        rejestry.lr++;
+                        rejestry.r0 = rejestry.r4;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+                        rejestry.lr++;
+                        rejestry.r0 = rejestry.r5;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+                        rejestry.lr++;
+                        rejestry.r0 = rejestry.r6;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+                        rejestry.lr++;
+                        rejestry.r0 = rejestry.r7;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        rejestry.lr++;
+                        rejestry.r0 = rejestry.r8;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+                        rejestry.lr++;
+                        rejestry.r0 = rejestry.r9;
+                    }
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)
                 {
@@ -275,6 +251,36 @@ namespace Interpreter
                     {
                         rejestry.lr++;
                         rejestry.r1 = rejestry.lr;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+                        rejestry.lr++;
+                        rejestry.r1 = rejestry.r4;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+                        rejestry.lr++;
+                        rejestry.r1 = rejestry.r5;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+                        rejestry.lr++;
+                        rejestry.r1 = rejestry.r6;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+                        rejestry.lr++;
+                        rejestry.r1 = rejestry.r7;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        rejestry.lr++;
+                        rejestry.r1 = rejestry.r8;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+                        rejestry.lr++;
+                        rejestry.r1 = rejestry.r9;
                     }
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)
@@ -319,6 +325,36 @@ namespace Interpreter
                         rejestry.lr++;
                         rejestry.r2 = rejestry.lr;
                     }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = rejestry.r4;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = rejestry.r5;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = rejestry.r6;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = rejestry.r7;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = rejestry.r8;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+                        rejestry.lr++;
+                        rejestry.r2 = rejestry.r9;
+                    }
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)
                 {
@@ -339,7 +375,7 @@ namespace Interpreter
                         temp = temp << 8;
                         rejestry.lr++;
                         temp += Mem.MEMORY[(int)rejestry.lr];
-                        rejestry.r2 = temp;
+                        rejestry.r3 = temp;
                         rejestry.lr++;
                     }
                     else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
@@ -361,6 +397,36 @@ namespace Interpreter
                     {
                         rejestry.lr++;
                         rejestry.r3 = rejestry.lr;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+                        rejestry.lr++;
+                        rejestry.r3 = rejestry.r4;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+                        rejestry.lr++;
+                        rejestry.r3 = rejestry.r5;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+                        rejestry.lr++;
+                        rejestry.r3 = rejestry.r6;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+                        rejestry.lr++;
+                        rejestry.r3 = rejestry.r7;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        rejestry.lr++;
+                        rejestry.r3 = rejestry.r8;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+                        rejestry.lr++;
+                        rejestry.r3 = rejestry.r9;
                     }
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)
@@ -406,14 +472,484 @@ namespace Interpreter
                         rejestry.lr++;
                         rejestry.lr = (int)rejestry.r3;
                     }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+                        rejestry.lr++;
+                        rejestry.lr = (int)rejestry.r4;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+                        rejestry.lr++;
+                        rejestry.lr = (int)rejestry.r5;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+                        rejestry.lr++;
+                        rejestry.lr = (int)rejestry.r6;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+                        rejestry.lr++;
+                        rejestry.lr = (int)rejestry.r7;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        rejestry.lr++;
+                        rejestry.lr = (int)rejestry.r8;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+                        rejestry.lr++;
+                        rejestry.lr = (int)rejestry.r9;
+                    }
                 }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                {
+                     rejestry.lr++;
+                    if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)
+                    {
+                        rejestry.lr++;
+                        int temp2 = (int)rejestry.r1;
+                        int temp = Mem.MEMORY[temp2];
+                        temp = temp << 8;
+                        temp += Mem.MEMORY[temp2 + 1];
+                        rejestry.r4 = temp;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
+                    {
+                        rejestry.lr++;
+                        int temp = Mem.MEMORY[(int)rejestry.lr];
+                        temp = temp << 8;
+                        rejestry.lr++;
+                        temp += Mem.MEMORY[(int)rejestry.lr];
+                        rejestry.r4 = temp;
+                        rejestry.lr++;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
+                    {
+                        rejestry.lr++;
+                        rejestry.r4 = rejestry.r0;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)
+                    {
+                        rejestry.lr++;
+                        rejestry.r4 = rejestry.r1;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)
+                    {
+                        rejestry.lr++;
+                        rejestry.r4 = rejestry.r2;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)
+                    {
+                        rejestry.lr++;
+                        rejestry.r4 = rejestry.lr;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)
+                    {
+                        rejestry.lr++;
+                        rejestry.r4 = rejestry.r3;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+                        rejestry.lr++;
+                        rejestry.r4 = rejestry.r5;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+                        rejestry.lr++;
+                        rejestry.r4 = rejestry.r6;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+                        rejestry.lr++;
+                        rejestry.r4 = rejestry.r7;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        rejestry.lr++;
+                        rejestry.r4 = rejestry.r8;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+                        rejestry.lr++;
+                        rejestry.r4 = rejestry.r9;
+                    }
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                {
+                    rejestry.lr++;
+                    if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)
+                    {
+                        rejestry.lr++;
+                        int temp2 = (int)rejestry.r1;
+                        int temp = Mem.MEMORY[temp2];
+                        temp = temp << 8;
+                        temp += Mem.MEMORY[temp2 + 1];
+                        rejestry.r5 = temp;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
+                    {
+                        rejestry.lr++;
+                        int temp = Mem.MEMORY[(int)rejestry.lr];
+                        temp = temp << 8;
+                        rejestry.lr++;
+                        temp += Mem.MEMORY[(int)rejestry.lr];
+                        rejestry.r5 = temp;
+                        rejestry.lr++;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
+                    {
+                        rejestry.lr++;
+                        rejestry.r5 = rejestry.r0;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)
+                    {
+                        rejestry.lr++;
+                        rejestry.r5 = rejestry.r1;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)
+                    {
+                        rejestry.lr++;
+                        rejestry.r5 = rejestry.r2;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)
+                    {
+                        rejestry.lr++;
+                        rejestry.r5 = rejestry.lr;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)
+                    {
+                        rejestry.lr++;
+                        rejestry.r5 = rejestry.r3;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+                        rejestry.lr++;
+                        rejestry.r5 = rejestry.r4;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+                        rejestry.lr++;
+                        rejestry.r5 = rejestry.r6;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+                        rejestry.lr++;
+                        rejestry.r5 = rejestry.r7;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        rejestry.lr++;
+                        rejestry.r5 = rejestry.r8;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+                        rejestry.lr++;
+                        rejestry.r5 = rejestry.r9;
+                    }
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                {
+                    rejestry.lr++;
+                    if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)
+                    {
+                        rejestry.lr++;
+                        int temp2 = (int)rejestry.r1;
+                        int temp = Mem.MEMORY[temp2];
+                        temp = temp << 8;
+                        temp += Mem.MEMORY[temp2 + 1];
+                        rejestry.r6 = temp;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
+                    {
+                        rejestry.lr++;
+                        int temp = Mem.MEMORY[(int)rejestry.lr];
+                        temp = temp << 8;
+                        rejestry.lr++;
+                        temp += Mem.MEMORY[(int)rejestry.lr];
+                        rejestry.r6 = temp;
+                        rejestry.lr++;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
+                    {
+                        rejestry.lr++;
+                        rejestry.r6 = rejestry.r0;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)
+                    {
+                        rejestry.lr++;
+                        rejestry.r6 = rejestry.r1;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)
+                    {
+                        rejestry.lr++;
+                        rejestry.r6 = rejestry.r2;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)
+                    {
+                        rejestry.lr++;
+                        rejestry.r6 = rejestry.lr;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)
+                    {
+                        rejestry.lr++;
+                        rejestry.r6 = rejestry.r3;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+                        rejestry.lr++;
+                        rejestry.r6 = rejestry.r4;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+                        rejestry.lr++;
+                        rejestry.r6 = rejestry.r5;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+                        rejestry.lr++;
+                        rejestry.r6 = rejestry.r7;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        rejestry.lr++;
+                        rejestry.r6 = rejestry.r8;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+                        rejestry.lr++;
+                        rejestry.r6 = rejestry.r9;
+                    }
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                {
+                    rejestry.lr++;
+                    if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)
+                    {
+                        rejestry.lr++;
+                        int temp2 = (int)rejestry.r1;
+                        int temp = Mem.MEMORY[temp2];
+                        temp = temp << 8;
+                        temp += Mem.MEMORY[temp2 + 1];
+                        rejestry.r7 = temp;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
+                    {
+                        rejestry.lr++;
+                        int temp = Mem.MEMORY[(int)rejestry.lr];
+                        temp = temp << 8;
+                        rejestry.lr++;
+                        temp += Mem.MEMORY[(int)rejestry.lr];
+                        rejestry.r7 = temp;
+                        rejestry.lr++;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
+                    {
+                        rejestry.lr++;
+                        rejestry.r7 = rejestry.r0;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)
+                    {
+                        rejestry.lr++;
+                        rejestry.r7 = rejestry.r1;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)
+                    {
+                        rejestry.lr++;
+                        rejestry.r7 = rejestry.r2;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)
+                    {
+                        rejestry.lr++;
+                        rejestry.r7 = rejestry.lr;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)
+                    {
+                        rejestry.lr++;
+                        rejestry.r7 = rejestry.r3;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+                        rejestry.lr++;
+                        rejestry.r7 = rejestry.r4;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+                        rejestry.lr++;
+                        rejestry.r7 = rejestry.r5;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+                        rejestry.lr++;
+                        rejestry.r7 = rejestry.r6;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        rejestry.lr++;
+                        rejestry.r7 = rejestry.r8;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+                        rejestry.lr++;
+                        rejestry.r7 = rejestry.r9;
+                    }
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                {
+                    rejestry.lr++;
+                    if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)
+                    {
+                        rejestry.lr++;
+                        int temp2 = (int)rejestry.r1;
+                        int temp = Mem.MEMORY[temp2];
+                        temp = temp << 8;
+                        temp += Mem.MEMORY[temp2 + 1];
+                        rejestry.r8 = temp;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
+                    {
+                        rejestry.lr++;
+                        int temp = Mem.MEMORY[(int)rejestry.lr];
+                        temp = temp << 8;
+                        rejestry.lr++;
+                        temp += Mem.MEMORY[(int)rejestry.lr];
+                        rejestry.r8 = temp;
+                        rejestry.lr++;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
+                    {
+                        rejestry.lr++;
+                        rejestry.r8 = rejestry.r0;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)
+                    {
+                        rejestry.lr++;
+                        rejestry.r8 = rejestry.r1;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)
+                    {
+                        rejestry.lr++;
+                        rejestry.r8 = rejestry.r2;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)
+                    {
+                        rejestry.lr++;
+                        rejestry.r8 = rejestry.lr;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)
+                    {
+                        rejestry.lr++;
+                        rejestry.r8 = rejestry.r3;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+                        rejestry.lr++;
+                        rejestry.r8 = rejestry.r4;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+                        rejestry.lr++;
+                        rejestry.r8 = rejestry.r5;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+                        rejestry.lr++;
+                        rejestry.r8 = rejestry.r6;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+                        rejestry.lr++;
+                        rejestry.r8 = rejestry.r7;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+                        rejestry.lr++;
+                        rejestry.r8 = rejestry.r9;
+                    }
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                {
+                    rejestry.lr++;
+                    if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)
+                    {
+                        rejestry.lr++;
+                        int temp2 = (int)rejestry.r1;
+                        int temp = Mem.MEMORY[temp2];
+                        temp = temp << 8;
+                        temp += Mem.MEMORY[temp2 + 1];
+                        rejestry.r9 = temp;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
+                    {
+                        rejestry.lr++;
+                        int temp = Mem.MEMORY[(int)rejestry.lr];
+                        temp = temp << 8;
+                        rejestry.lr++;
+                        temp += Mem.MEMORY[(int)rejestry.lr];
+                        rejestry.r9 = temp;
+                        rejestry.lr++;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
+                    {
+                        rejestry.lr++;
+                        rejestry.r9 = rejestry.r0;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)
+                    {
+                        rejestry.lr++;
+                        rejestry.r9 = rejestry.r1;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)
+                    {
+                        rejestry.lr++;
+                        rejestry.r9 = rejestry.r2;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)
+                    {
+                        rejestry.lr++;
+                        rejestry.r9 = rejestry.lr;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)
+                    {
+                        rejestry.lr++;
+                        rejestry.r9 = rejestry.r3;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+                        rejestry.lr++;
+                        rejestry.r9 = rejestry.r4;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+                        rejestry.lr++;
+                        rejestry.r9 = rejestry.r5;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+                        rejestry.lr++;
+                        rejestry.r9 = rejestry.r6;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+                        rejestry.lr++;
+                        rejestry.r9 = rejestry.r7;
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        rejestry.lr++;
+                        rejestry.r9 = rejestry.r8;
+                    }
+                    
+                }
+
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)
                 {
                     rejestry.lr++;
                     if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)
                     {
-                        byte tmp=0;
-                        byte tmp2=0;
+                        byte tmp = 0;
+                        byte tmp2 = 0;
                         byte[] bytes = BitConverter.GetBytes(rejestry.lr);
                         if (BitConverter.IsLittleEndian)
                         {
@@ -426,38 +962,38 @@ namespace Interpreter
                             tmp2 = bytes[2];
                         }
                         Mem.MEMORY[(int)rejestry.r1] = tmp2;
-                        Mem.MEMORY[(int)rejestry.r1+1] = tmp;
+                        Mem.MEMORY[(int)rejestry.r1 + 1] = tmp;
                         rejestry.lr++;
-                        
+
                     }
                     else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
                     {
                         rejestry.lr++;
                         Mem.MEMORY[(int)rejestry.r1] = Mem.MEMORY[(int)rejestry.lr];
                         rejestry.lr++;
-                        
+
                     }
                     else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
                     {
-                            
-                            byte tmp = 0;
-                            byte tmp2 = 0;
-                            byte[] bytes = BitConverter.GetBytes((int)rejestry.r0);
-                            if (BitConverter.IsLittleEndian)
-                            {
-                                tmp = bytes[0];
-                                tmp2 = bytes[1];
-                            }
-                            else
-                            {
-                                tmp = bytes[3];
-                                tmp2 = bytes[2];
-                            }
-                            Mem.MEMORY[(int)rejestry.r1] = tmp2;
-                            Mem.MEMORY[(int)rejestry.r1 + 1] = tmp;
-                            rejestry.lr++;
 
-                        
+                        byte tmp = 0;
+                        byte tmp2 = 0;
+                        byte[] bytes = BitConverter.GetBytes((int)rejestry.r0);
+                        if (BitConverter.IsLittleEndian)
+                        {
+                            tmp = bytes[0];
+                            tmp2 = bytes[1];
+                        }
+                        else
+                        {
+                            tmp = bytes[3];
+                            tmp2 = bytes[2];
+                        }
+                        Mem.MEMORY[(int)rejestry.r1] = tmp2;
+                        Mem.MEMORY[(int)rejestry.r1 + 1] = tmp;
+                        rejestry.lr++;
+
+
                     }
                     else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)
                     {
@@ -516,6 +1052,138 @@ namespace Interpreter
                         Mem.MEMORY[(int)rejestry.r1 + 1] = tmp;
                         rejestry.lr++;
                     }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                    {
+
+                        byte tmp = 0;
+                        byte tmp2 = 0;
+                        byte[] bytes = BitConverter.GetBytes((int)rejestry.r4);
+                        if (BitConverter.IsLittleEndian)
+                        {
+                            tmp = bytes[0];
+                            tmp2 = bytes[1];
+                        }
+                        else
+                        {
+                            tmp = bytes[3];
+                            tmp2 = bytes[2];
+                        }
+                        Mem.MEMORY[(int)rejestry.r1] = tmp2;
+                        Mem.MEMORY[(int)rejestry.r1 + 1] = tmp;
+                        rejestry.lr++;
+
+
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                    {
+
+                        byte tmp = 0;
+                        byte tmp2 = 0;
+                        byte[] bytes = BitConverter.GetBytes((int)rejestry.r5);
+                        if (BitConverter.IsLittleEndian)
+                        {
+                            tmp = bytes[0];
+                            tmp2 = bytes[1];
+                        }
+                        else
+                        {
+                            tmp = bytes[3];
+                            tmp2 = bytes[2];
+                        }
+                        Mem.MEMORY[(int)rejestry.r1] = tmp2;
+                        Mem.MEMORY[(int)rejestry.r1 + 1] = tmp;
+                        rejestry.lr++;
+
+
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                    {
+
+                        byte tmp = 0;
+                        byte tmp2 = 0;
+                        byte[] bytes = BitConverter.GetBytes((int)rejestry.r6);
+                        if (BitConverter.IsLittleEndian)
+                        {
+                            tmp = bytes[0];
+                            tmp2 = bytes[1];
+                        }
+                        else
+                        {
+                            tmp = bytes[3];
+                            tmp2 = bytes[2];
+                        }
+                        Mem.MEMORY[(int)rejestry.r1] = tmp2;
+                        Mem.MEMORY[(int)rejestry.r1 + 1] = tmp;
+                        rejestry.lr++;
+
+
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                    {
+
+                        byte tmp = 0;
+                        byte tmp2 = 0;
+                        byte[] bytes = BitConverter.GetBytes((int)rejestry.r7);
+                        if (BitConverter.IsLittleEndian)
+                        {
+                            tmp = bytes[0];
+                            tmp2 = bytes[1];
+                        }
+                        else
+                        {
+                            tmp = bytes[3];
+                            tmp2 = bytes[2];
+                        }
+                        Mem.MEMORY[(int)rejestry.r1] = tmp2;
+                        Mem.MEMORY[(int)rejestry.r1 + 1] = tmp;
+                        rejestry.lr++;
+
+
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+
+                        byte tmp = 0;
+                        byte tmp2 = 0;
+                        byte[] bytes = BitConverter.GetBytes((int)rejestry.r8);
+                        if (BitConverter.IsLittleEndian)
+                        {
+                            tmp = bytes[0];
+                            tmp2 = bytes[1];
+                        }
+                        else
+                        {
+                            tmp = bytes[3];
+                            tmp2 = bytes[2];
+                        }
+                        Mem.MEMORY[(int)rejestry.r1] = tmp2;
+                        Mem.MEMORY[(int)rejestry.r1 + 1] = tmp;
+                        rejestry.lr++;
+
+
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                    {
+
+                        byte tmp = 0;
+                        byte tmp2 = 0;
+                        byte[] bytes = BitConverter.GetBytes((int)rejestry.r9);
+                        if (BitConverter.IsLittleEndian)
+                        {
+                            tmp = bytes[0];
+                            tmp2 = bytes[1];
+                        }
+                        else
+                        {
+                            tmp = bytes[3];
+                            tmp2 = bytes[2];
+                        }
+                        Mem.MEMORY[(int)rejestry.r1] = tmp2;
+                        Mem.MEMORY[(int)rejestry.r1 + 1] = tmp;
+                        rejestry.lr++;
+
+
+                    }
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.SEM)
                 {
@@ -534,7 +1202,7 @@ namespace Interpreter
                     {
                         rejestry.lr++;
                         rejestry.r2 = zawiadowca.RUNNING.MESSAGE_SEMAPHORE_COMMON;
-                        
+
                     }
                     else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SEM.RECEIVER)
                     {
@@ -553,15 +1221,15 @@ namespace Interpreter
                         rejestry.r2 = ((PCB)rejestry.r2).MESSAGE_SEMAPHORE_RECEIVER;
                     }
                 }
-            }//MOV Gotowe (tylko R0,R1,R2,R3,LR,MEM,WART) SEM gotowe, dodac rejestry
-            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.DIV)
+            }//MOV kopiuje wartość z wybranego miejsca do innego                                (MOV, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|SEM, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART|***, *** wyjaśnienie wyżej)
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.ADD)
             {
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//ADD WART 
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
-                    temp /= Mem.MEMORY[(int)rejestry.lr];
+                    temp += Mem.MEMORY[(int)rejestry.lr];
                     rejestry.r0 = temp;
                     rejestry.lr++;
 
@@ -570,49 +1238,93 @@ namespace Interpreter
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
-                    temp /= Mem.MEMORY[(int)rejestry.r1];
+                    temp += Mem.MEMORY[(int)rejestry.r1];
                     rejestry.r0 = temp;
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//ADD R0 dodaje akumulator do akumulatora (2*r0)
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
-                    temp /= (int)rejestry.r0;
+                    temp += (int)rejestry.r0;
                     rejestry.r0 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//ADD R1
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
-                    temp /= (int)rejestry.r1;
+                    temp += (int)rejestry.r1;
                     rejestry.r0 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//ADD R2
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
-                    temp /= (int)rejestry.r2;
+                    temp += (int)rejestry.r2;
                     rejestry.r0 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//ADD R3
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
-                    temp /= (int)rejestry.r3;
+                    temp += (int)rejestry.r3;
                     rejestry.r0 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//ADD LR (dodaje licznik rozkazów po przesunięciu go na następna komórkę)
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)// (dodaje licznik rozkazów po przesunięciu go na następna komórkę)
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
-                    temp /= (int)rejestry.lr;
+                    temp += (int)rejestry.lr;
                     rejestry.r0 = temp;
                 }
-            }//DIV gotowe
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)//
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp += (int)rejestry.r4;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)//
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp += (int)rejestry.r5;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)//
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp += (int)rejestry.r6;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)//
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp += (int)rejestry.r7;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)//
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp += (int)rejestry.r8;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)//
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp += (int)rejestry.r9;
+                    rejestry.r0 = temp;
+                }
+
+
+            }//ADD dodawanie do akumulatora,                                                    (ADD, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <wartosc jeżeli wcześniej WART>)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.SUB)
             {
                 rejestry.lr++;
-                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//ADD WART 
+                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//SUB WART 
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
@@ -621,50 +1333,286 @@ namespace Interpreter
                     rejestry.lr++;
 
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)//ADD MEM (wskazywana przez r1) 
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)//SUB MEM (wskazywana przez r1) 
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
                     temp -= Mem.MEMORY[(int)rejestry.r1];
                     rejestry.r0 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//ADD R0 dodaje akumulator do akumulatora (2*r0)
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//SUB R0 odejmuje akumulator od akumulatora (r0=0)
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
                     temp -= (int)rejestry.r0;
                     rejestry.r0 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//ADD R1
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//SUB R1
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
                     temp -= (int)rejestry.r1;
                     rejestry.r0 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//ADD R2
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//SUB R2
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
                     temp -= (int)rejestry.r2;
                     rejestry.r0 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//ADD R3
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//SUB R3
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
                     temp -= (int)rejestry.r3;
                     rejestry.r0 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//ADD LR (dodaje licznik rozkazów po przesunięciu go na następna komórkę)
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//SUB LR (dodaje licznik rozkazów po przesunięciu go na następna komórkę)
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
                     temp -= (int)rejestry.lr;
                     rejestry.r0 = temp;
                 }
-            }//SUB gotowe
-            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.INC) 
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)//SUB
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.r4;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)//SUB
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.r5;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)//SUB
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.r6;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)//SUB
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.r7;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)//SUB
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.r8;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)//SUB
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp -= (int)rejestry.r9;
+                    rejestry.r0 = temp;
+                }
+            }//SUB odejmowanie od akumulatora,                                                  (SUB, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <wartosc jeżeli wcześniej WART>)
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.MUL)
+            {
+                rejestry.lr++;
+                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//MUL WART 
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= Mem.MEMORY[(int)rejestry.lr];
+                    rejestry.r0 = temp;
+                    rejestry.lr++;
+
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)//MUL MEM (wskazywana przez r1) 
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= Mem.MEMORY[(int)rejestry.r1];
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//MUL R0 mnoży akumulator przez akumulator (r0^2)
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.r0;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//MUL R1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.r1;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//MUL R2
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.r2;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//MUL R3
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.r3;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//MUL LR (mnoży licznik rozkazów po przesunięciu go na następna komórkę)
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.lr;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)//MUL
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.r4;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)//MUL
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.r5;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)//MUL
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.r6;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)//MUL
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.r7;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)//MUL
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.r8;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)//MUL
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp *= (int)rejestry.r9;
+                    rejestry.r0 = temp;
+                }
+            }//MUL mnożenie akumulatora,                                                        (MUL, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <wartosc jeżeli wcześniej WART>)
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.DIV)
+            {
+                rejestry.lr++;
+                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//DIV WART 
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= Mem.MEMORY[(int)rejestry.lr];
+                    rejestry.r0 = temp;
+                    rejestry.lr++;
+
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)//DIV MEM (wskazywana przez r1) 
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= Mem.MEMORY[(int)rejestry.r1];
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//DIV R0 dzieli akumulator do akumulatora (r0=1)
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r0;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//DIV R1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r1;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//DIV R2
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r2;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//DIV R3
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r3;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//DIV LR (dzieli przez licznik rozkazów po przesunięciu go na następna komórkę)
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.lr;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)//DIV
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r4;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)//DIV
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r5;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)//DIV
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r6;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)//DIV
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r7;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)//DIV
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r8;
+                    rejestry.r0 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)//DIV
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r0;
+                    temp /= (int)rejestry.r9;
+                    rejestry.r0 = temp;
+                }
+            }//DIV dzielenie akumulatora, bez reszty,                                           (DIV, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <wartosc jeżeli wcześniej WART>)
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.INC)
             {
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//zwiększa akumulator o 1
@@ -709,54 +1657,137 @@ namespace Interpreter
                     temp++;
                     Mem.MEMORY[(int)rejestry.r1] = temp;
                 }
-                
-            }//INC gotowe
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)//zwiększa rejestr 4 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r4;
+                    temp++;
+                    rejestry.r4 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)//zwiększa rejestr 5 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r5;
+                    temp++;
+                    rejestry.r5 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)//zwiększa rejestr 6 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r6;
+                    temp++;
+                    rejestry.r6 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)//zwiększa rejestr 7 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r7;
+                    temp++;
+                    rejestry.r7 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)//zwiększa rejestr 8 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r8;
+                    temp++;
+                    rejestry.r8 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)//zwiększa rejestr 9 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r9;
+                    temp++;
+                    rejestry.r9 = temp;
+                }
+            }//INC inkrementacja,                                                               (INC, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.DEC)
             {
                 rejestry.lr++;
-                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//zwiększa akumulator o 1
+                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//zmniejsza akumulator o 1
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r0;
                     temp--;
                     rejestry.r0 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//zwiększa rejestr 1 o 1
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)//zmniejsza rejestr 1 o 1
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r1;
                     temp--;
                     rejestry.r1 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//zwiększa rejestr 2 o 1
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)//zmniejsza rejestr 2 o 1
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r2;
                     temp--;
                     rejestry.r2 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//zwiększa rejestr 3 o 1
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)//zmniejsza rejestr 3 o 1
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.r3;
                     temp--;
                     rejestry.r3 = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//zwiększa rejestr lr o 1
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//zmniejsza rejestr lr o 1
                 {
                     rejestry.lr++;
                     int temp = (int)rejestry.lr;
                     temp--;
                     rejestry.lr = temp;
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)//zwiększa komórkę pamięci wksazywaną przez r1 o 1
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)//zmniejsza komórkę pamięci wksazywaną przez r1 o 1
                 {
                     rejestry.lr++;
                     byte temp = Mem.MEMORY[(int)rejestry.r1];
                     temp--;
                     Mem.MEMORY[(int)rejestry.r1] = temp;
                 }
-            }//DEC gotowe
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)//zmniejsza rejestr 4 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r4;
+                    temp--;
+                    rejestry.r4 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)//zmniejsza rejestr 5 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r5;
+                    temp--;
+                    rejestry.r5 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)//zmniejsza rejestr 6 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r6;
+                    temp--;
+                    rejestry.r6 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)//zmniejsza rejestr 7 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r7;
+                    temp--;
+                    rejestry.r7 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)//zmniejsza rejestr 8 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r8;
+                    temp--;
+                    rejestry.r8 = temp;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)//zmniejsza rejestr 9 o 1
+                {
+                    rejestry.lr++;
+                    int temp = (int)rejestry.r9;
+                    temp--;
+                    rejestry.r9 = temp;
+                }
+            }//DEC dekrementacja,                                                               (DEC, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART) 
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JUMPF)
             {
                 rejestry.lr++;
@@ -766,20 +1797,283 @@ namespace Interpreter
                     rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
                     rejestry.lr++;
                 }
-                
-                //skacze w przód
-            }//JUMPF gotowe
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)
+                {
+                    rejestry.lr++;
+                    if (Mem.MEMORY[(int)rejestry.r1] == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r0 == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r1 == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r2 == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r3 == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r4 == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r5 == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r6 == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r7 == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r8 == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r9 == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.lr == 0)
+                    {
+
+                        rejestry.lr += Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                //skacze w przód (gdy pierwsze jest wart to skok bezwarunkowy inaczej warunkowy z wskazaniem rejestru)
+            }//JUMPF skok warunkowy lub nie w zależności od następnego parametru, do przodu     (JUMPF, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <odległość>
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JUMPR)
             {
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
                 {
                     rejestry.lr++;
-                    rejestry.lr = Mem.MEMORY[(int)rejestry.lr];
+                    rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.MEM)
+                {
+                    rejestry.lr++;
+                    if (Mem.MEMORY[(int)rejestry.r1] == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r0 == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R1)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r1 == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r2 == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R3)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r3 == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R4)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r4 == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R5)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r5 == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R6)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r6 == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R7)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r7 == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r8 == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R9)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r9 == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.lr == 0)
+                    {
+
+                        rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+
+                    }
                     rejestry.lr++;
                 }
                 //skacze w tył
-            }//JUMPR gotowe
+            }//JUMPR skok warunkowy lub nie w zależności od następnego parametru, do tyłu       (JUMPR,  R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <odległość>)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.METHOD)
             {
                 rejestry.lr++;
@@ -861,7 +2155,7 @@ namespace Interpreter
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.CZYTNIK)
                 {
                     rejestry.lr++;
-                    Ext.CZYTNIK(Ext.com,Ext.adres,Ext.il_danych);
+                    Ext.CZYTNIK(Ext.com, Ext.adres, Ext.il_danych);
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.SCAN)
                 {
@@ -878,10 +2172,9 @@ namespace Interpreter
                     rejestry.lr++;
                     Mem.PODRECZNA();
                 }
-                
-                //dokończyć
-            }//METHOD do zrobienia dodać sprawdzenie i czytnik
 
+                //dokończyć
+            }//METHOD możliwe rozszerzenia                                                      (METHOD, <nazwa metody>, <opcjonalnie parametry>)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.FLAG)
             {
                 rejestry.lr++;
@@ -889,122 +2182,31 @@ namespace Interpreter
                 rejestry.lr++;
                 LFlag[tmp] = (byte)rejestry.lr;
 
-            }//FLAG działa
-
-            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JUMP)
+            }//FLAG dodanie flagi (zapamiętanie licznika rozkazów)                              (FLAG , <nr flagi>)
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JZ)
             {
                 rejestry.lr++;
-                if((int)rejestry.r0==0)
-                rejestry.lr=LFlag[(int)Mem.MEMORY[rejestry.lr]];
+                if ((int)rejestry.r0 == 0)
+                    rejestry.lr = LFlag[(int)Mem.MEMORY[rejestry.lr]];
                 else
+                    rejestry.lr++;
+            }//JZ skok przy r0==0 do flagi działa                                               (JZ, <nr flagi>)
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JMP)
+            {
                 rejestry.lr++;
-            }//JUMP przy r0==0 do flagi działa
+                rejestry.lr = LFlag[(int)Mem.MEMORY[rejestry.lr]];
+            }//JMP skok bezwarunkowy do flagi                                                   (JZ, <nr flagi>)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.POWROT)
             {
-                rejestry.lr++;
+                int tmp = stos.Pop();
+                rejestry.lr = tmp;
                 //odczytanie ze stosu licznika rozkazów i go ustawienie
-            }
+            }//POWROT wczytuje licznik rozkazów ze stosu
 
 
         }
     }
 
-
-    public class PAdr
-    {
-        public string name;
-        int addr;
-        PAdr(string n, int a)
-        {
-            name = n;
-            addr = a;
-        }
-    }
-    //wywalićVVVVVVVV
-    public class CALL
-    {
-        public int rozkaz;
-        public int wartosc1;
-        public int wartosc2;
-        public int wartosc3;
-        public int wartosc4;
-        public int wartosc5;
-        public string napis1;
-
-        //Przeciążone konstruktory (-2000 to wartość dla nie określanego pola, przesyłanie wartości odbywa się przez ENUM, bądź dosłownie np stringiem)
-        CALL()
-        {
-            rozkaz = -2000;
-            wartosc1 = -2000;
-            wartosc2 = -2000;
-            wartosc3 = -2000;
-            wartosc4 = -2000;
-            wartosc5 = -2000;
-            napis1 = null;
-        }
-        CALL(string s)
-        {
-            rozkaz = -2000;
-            wartosc1 = -2000;
-            wartosc2 = -2000;
-            wartosc3 = -2000;
-            wartosc4 = -2000;
-            wartosc5 = -2000;
-            napis1 = s;
-        }
-        CALL(int r)
-        {
-            rozkaz = r;
-            wartosc1 = -2000;
-            wartosc2 = -2000;
-            wartosc3 = -2000;
-            wartosc4 = -2000;
-            wartosc5 = -2000;
-        }
-        CALL(int r, int w1)
-        {
-            rozkaz = r;
-            wartosc1 = w1;
-            wartosc2 = -2000;
-            wartosc3 = -2000;
-            wartosc4 = -2000;
-            wartosc5 = -2000;
-        }
-        CALL(int r, int w1, int w2)
-        {
-            rozkaz = r;
-            wartosc1 = w1;
-            wartosc2 = w2;
-            wartosc3 = -2000;
-            wartosc4 = -2000;
-            wartosc5 = -2000;
-        }
-        CALL(int r, int w1, int w2, int w3)
-        {
-            rozkaz = r;
-            wartosc1 = w1;
-            wartosc2 = w2;
-            wartosc3 = w3;
-            wartosc4 = -2000;
-            wartosc5 = -2000;
-        }
-        CALL(int r, int w1, int w2, int w3, int w4)
-        {
-            rozkaz = r;
-            wartosc1 = w1;
-            wartosc2 = w2;
-            wartosc3 = w3;
-            wartosc4 = w4;
-            wartosc5 = -2000;
-        }
-        CALL(int r, int w1, int w2, int w3, int w4, int w5)
-        {
-            rozkaz = r;
-            wartosc1 = w1;
-            wartosc2 = w2;
-            wartosc3 = w3;
-            wartosc4 = w4;
-            wartosc5 = w5;
-        }
-    }
+   
+    
 }

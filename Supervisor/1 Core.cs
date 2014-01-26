@@ -213,12 +213,12 @@ namespace Processor
             rejestry.r3 = cpu_stan[3];
             rejestry.lr = (int)cpu_stan[4];
             rejestry.ab = (bool)cpu_stan[5];
-            rejestry.r4 = (Int16)cpu_stan[6];
-            rejestry.r5 = (Int16)cpu_stan[7];
-            rejestry.r6 = (Int16)cpu_stan[8];
-            rejestry.r7 = (Int16)cpu_stan[9];
-            rejestry.r8 = (Int16)cpu_stan[10];
-            rejestry.r9 = (Int16)cpu_stan[11];
+            rejestry.r4 = cpu_stan[6];
+            rejestry.r5 = cpu_stan[7];
+            rejestry.r6 = cpu_stan[8];
+            rejestry.r7 = cpu_stan[9];
+            rejestry.r8 = cpu_stan[10];
+            rejestry.r9 = cpu_stan[11];
         }
 
         public PCB(string name, int adres)
@@ -245,12 +245,12 @@ namespace Processor
         public static object r1 = 0;
         public static object r2 = 0;
         public static object r3 = 0;
-        public static Int16 r4 = 0;
-        public static Int16 r5 = 0;
-        public static Int16 r6 = 0;
-        public static Int16 r7 = 0;
-        public static Int16 r8 = 0;
-        public static Int16 r9 = 0;
+        public static object r4 = 0;
+        public static object r5 = 0;
+        public static object r6 = 0;
+        public static object r7 = 0;
+        public static object r8 = 0;
+        public static object r9 = 0;
         public static int lr = 0;    //licznik rozkazów
         public static bool ab = false;  //adresowanie bezwzględne
 

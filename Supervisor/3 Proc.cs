@@ -22,7 +22,7 @@ namespace Process
             {
                 Mem.MEMORY[i + m] = XC[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
         public static byte[] XD = new byte[]
@@ -36,7 +36,7 @@ namespace Process
             {
                 Mem.MEMORY[i + m] = XD[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
 
@@ -51,7 +51,7 @@ namespace Process
             {
                 Mem.MEMORY[i + m] = XH[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
         public static byte[] XN = new byte[]//tego raczej nie robimy znajdowanie bloku po nazwie. Jeżeli robimy to trzeba rozszerzyć interpreter oraz utworzyć klasę z polem string otaz polem PCB
@@ -65,7 +65,7 @@ namespace Process
             {
                 Mem.MEMORY[i + m] = XN[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
         public static byte[] XR = new byte[]
@@ -79,7 +79,7 @@ namespace Process
             {
                 Mem.MEMORY[i + m] = XR[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
         public static byte[] XS = new byte[]
@@ -93,7 +93,7 @@ namespace Process
             {
                 Mem.MEMORY[i + m] = XS[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
         public static byte[] XY = new byte[]
@@ -107,7 +107,7 @@ namespace Process
             {
                 Mem.MEMORY[i + m] = XY[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
         public static byte[] XZ = new byte[]
@@ -121,7 +121,7 @@ namespace Process
             {
                 Mem.MEMORY[i + m] = XZ[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
         public static byte[] XQUE = new byte[]
@@ -136,7 +136,7 @@ namespace Process
             {
                 Mem.MEMORY[i + m] = XQUE[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
 

@@ -129,7 +129,7 @@ namespace Supervisor
             {
                 Mem.MEMORY[i+m] = mem[i];
             }
-            return i + 1;
+            return m + i + 1;
         }
 
         public static void czyscPodr(int adr, int rozmiar)
@@ -218,7 +218,8 @@ namespace Supervisor
 
    static public class IPLRTN
    {
-       public static int[] adrProg = new int[25];
+       public enum Eprog : byte { IBSUB, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
+       public static int[] adrProg = new int[25];//adresy początku programów (SVC) nie wszystkie
 
        public static void CWrite(ConsoleColor color, string text)
        {
@@ -257,74 +258,86 @@ namespace Supervisor
            int i = 0;
            int j = 0;
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.IBSUB] = i;
            i = IBSUB.zaladuj(0);
            CWrite(ConsoleColor.Cyan, "IBSUB");
            Console.Write(" - wczytano");
            Console.ReadLine();
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.IN] = i;
            i = Ext.zaladuj(i);
            CWrite(ConsoleColor.Cyan, "EXT ");
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.A] = i;
+           i = Mem.zaladujXA(i);
+           CWrite(ConsoleColor.Cyan, "XA ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
+
+           adrProg[(int)Eprog.F] = i;
+           i = Mem.zaladujXF(i);
+           CWrite(ConsoleColor.Cyan, "XF ");
+           Console.Write("- wczytano");
+           Console.ReadLine();
+
+           adrProg[(int)Eprog.C] = i;
            i = Proc.zaladujXC(i);
            CWrite(ConsoleColor.Cyan, "XC ");
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.D] = i;
            i = Proc.zaladujXD(i);
            CWrite(ConsoleColor.Cyan, "XD ");
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.H] = i;
            i = Proc.zaladujXH(i);
            CWrite(ConsoleColor.Cyan, "XH ");
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.N] = i;
            i = Proc.zaladujXN(i);
            CWrite(ConsoleColor.Cyan, "XN ");
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.R] = i;
            i = Proc.zaladujXR(i);
            CWrite(ConsoleColor.Cyan, "XR ");
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.S] = i;
            i = Proc.zaladujXS(i);
            CWrite(ConsoleColor.Cyan, "XS ");
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.Y] = i;
            i = Proc.zaladujXY(i);
            CWrite(ConsoleColor.Cyan, "XY ");
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.Z] = i;
            i = Proc.zaladujXZ(i);
            CWrite(ConsoleColor.Cyan, "XZ ");
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[j++] = i;
+           adrProg[(int)Eprog.Q] = i;
            i = Proc.zaladujXQUE(i);
            CWrite(ConsoleColor.Cyan, "XQUE ");
            Console.Write("- wczytano");
-           Console.ReadLine();
+           Console.ReadLine();//wpisywanie programów do pamięci głównej i początku każdego z nich do tablicy
 
            Console.Write("Opisywanie wolnej pamięci przy pomocy bloków FSB");
-           if (Mem.start(i) == false) //całą pamięć wolną opisuje przy pomocy bloków FSB i wszystkie klucze ochrony ustawia na 0
+           if (Mem.start(i) == false) //całą pamięć wolną opisuje przy pomocy bloków FSB 
            {
                Console.Write(" - ");
                CWrite(ConsoleColor.Red, "BŁĄD!");
@@ -335,7 +348,7 @@ namespace Supervisor
            {
                Console.Write(" - wykonano");
                Console.ReadLine();
-           }
+           }//opisywanie wolnej pamięci blaokami FSB
 
            Console.Write("Tworzenie PCB dla pierwszego strumienia zlecień");
            Console.ReadLine();
@@ -344,7 +357,7 @@ namespace Supervisor
            ibsub1.cpu_stan[1] = 0;
            ibsub1.cpu_stan[2] = 0;
            ibsub1.cpu_stan[3] = 0;
-           ibsub1.cpu_stan[4] = adrProg[(int)Interpreter.Inter.Eprog.IBSUB];
+           ibsub1.cpu_stan[4] = adrProg[(int)Eprog.IBSUB];
 
            Console.Write("Tworzenie PCB dla drugiego strumienia zlecień");
            Console.ReadLine();
