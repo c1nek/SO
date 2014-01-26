@@ -12,12 +12,12 @@ namespace Interpreter
 {
     public static class Inter
     {
-        public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT };
+        public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT, KONIEC };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG};
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN ,PRZESZUKAJ_LISTE, PODRECZNA};
-        public enum Eprog : byte { IBSUB, IN, OUT=1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG };
+        public enum Eprog : byte { IBSUP, IN, OUT=1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
 
 
         public static byte[] LFlag = new byte[100];//tablica adresów flag
@@ -123,7 +123,7 @@ namespace Interpreter
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.Y)
                 {
-                    //wywołaj metode Y klasy Proc
+                    //wywołaj metode Y klasy Proc (SVC, Y, REJESTR|PROG, Eprog)
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.Z)
                 {
@@ -2108,7 +2108,7 @@ namespace Interpreter
                         dl += Mem.MEMORY[(int)rejestry.lr];
                         rejestry.lr++;
                     }
-                    IBSUB.czyscPodr(adr, dl);
+                    IBSUP.czyscPodr(adr, dl);
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.PRZYG_XR)
                 {
@@ -2140,12 +2140,12 @@ namespace Interpreter
                         rejestry.lr++;
 
                     }
-                    IBSUB.przygXR(adr, dl);
+                    IBSUP.przygXR(adr, dl);
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.INTER_KOM)
                 {
                     rejestry.lr++;
-                    IBSUB.interKom();
+                    IBSUP.interKom();
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.SPRAWDZENIE)
                 {
@@ -2160,7 +2160,7 @@ namespace Interpreter
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.SCAN)
                 {
                     rejestry.lr++;
-                    IBSUB.SCAN();
+                    IBSUP.SCAN();
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.PRZESZUKAJ_LISTE)
                 {
@@ -2171,6 +2171,21 @@ namespace Interpreter
                 {
                     rejestry.lr++;
                     Mem.PODRECZNA();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.READ_MSG)
+                {
+                    rejestry.lr++;
+                    IBSUP.READ_MSG();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.INTER_LOAD)
+                {
+                    rejestry.lr++;
+                    IBSUP.INTER_LOAD();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.PRINT_MSG)
+                {
+                    rejestry.lr++;
+                    IBSUP.PRINT_MSG();
                 }
 
                 //dokończyć
@@ -2225,7 +2240,7 @@ namespace Interpreter
                 rejestry.lr = tmp;
                 //odczytanie ze stosu licznika rozkazów i go ustawienie
             }//POWROT wczytuje licznik rozkazów ze stosu
-
+            
 
         }
     }

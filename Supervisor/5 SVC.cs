@@ -11,14 +11,14 @@ using Interpreter;
 
 namespace Supervisor
 {
-    public static class IBSUB
+    public static class IBSUP
     {
-        public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT };
+        public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT, KONIEC };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA };
-        public enum Eprog : byte { IBSUB, EXPUNGE, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER};
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG };//dodac readmsg
+        public enum Eprog : byte { IBSUP, EXPUNGE, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER};
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
         
@@ -33,7 +33,7 @@ namespace Supervisor
                     (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
                     (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R3,
                     (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,
-                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,        (byte)Eprog.IN,                                     //Uruchomienie procesu *IN
+                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,         (byte)wartosc_TYP.PROG,(byte)Eprog.IN,                                     //Uruchomienie procesu *IN
 
  
                     (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,               
@@ -47,7 +47,7 @@ namespace Supervisor
                     (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                           
                     (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R3,               
                     (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,                                            
-                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,        (byte)Eprog.OUT,                                    //Uruchomienie procesu *OUT
+                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,         (byte)wartosc_TYP.PROG,(byte)Eprog.OUT,                                    //Uruchomienie procesu *OUT
 
                     /////////////////////////////////////////////////////////////////////////////////////////////////////
                     (byte)rozkaz.FLAG, 0,///////////////////////////////////////////////////////////////////FLAGA 0
@@ -90,7 +90,7 @@ namespace Supervisor
                 (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.INTER_KOM,                                                     //ustawia rejestry pod utworzenie procesu uzytkownika
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
-                (byte)rozkaz.JZ,        Convert.ToByte(wartosc_TYP.WART), 0, ////////////////////////SKOK do flagi 0
+                (byte)rozkaz.JZ,        (byte)wartosc_TYP.WART, 0, ////////////////////////SKOK do flagi 0
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,10 +101,10 @@ namespace Supervisor
                 (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.SCAN,                                                          //pobranie pola o wielkosci i jego interpretacja jeżeli jest nie poprawne EXPUNGE
                 (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,           (byte)wartosc_TYP.R6,
                 (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,
-                (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,            (byte)Eprog.IN,
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,            (byte)wartosc_TYP.PROG,    (byte)Eprog.IN,
                 (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,           (byte)wartosc_TYP.R7,
                 (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,
-                (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,            (byte)Eprog.IN,
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,             (byte)wartosc_TYP.PROG,    (byte)Eprog.IN,
 
                 (byte)rozkaz.JZ,        (byte)wartosc_TYP.PROG,         (byte)Eprog.EXPUNGE,
 
@@ -126,7 +126,25 @@ namespace Supervisor
                 (byte)rozkaz.FLAG,      1,//////////////////////////////////////////////////FLAGA 1
                 //////////////////////////////////////////////////////////////////////////////////////////
 
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.READ_MSG, 
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.S,
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.PRZYG_XR,  (byte)wartosc_TYP.R3, (byte)wartosc_TYP.WART, 2,
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.R,
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.INTER_LOAD,
+                (byte)rozkaz.JZ,        (byte)wartosc_TYP.WART, 1,
 
+
+                //////////////////////////////////////////////////////////////////////////////////////////
+                //////ENDCARD//////ENDCARD//////ENDCARD//////ENDCARD//////ENDCARD//////ENDCARD//////ENDCARD
+                //////////////////////////////////////////////////////////////////////////////////////////
+
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,            (byte)wartosc_TYP.R8,
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.PRZYG_XR,  (byte)wartosc_TYP.R3, (byte)wartosc_TYP.WART, 2,
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.R,
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.PRINT_MSG,
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.S,
+
+                (byte)rozkaz.JZ,        (byte)wartosc_TYP.PROG,         (byte)Eprog.EXPUNGE,
 
         };
 
@@ -213,7 +231,7 @@ namespace Supervisor
                 Console.ReadLine();
                 Environment.Exit(0);
             }
-            i = (int)rejestry.r2 +32;
+            i = (int)rejestry.r2 +34;
             if (Mem.MEMORY[i] != '$')
             {
                 System.Console.WriteLine("Blad: inna karta. Oczekiwana wartosc to $JOB. Otrzymano {0}{1}{2}{3}", (char)Mem.MEMORY[i], (char)Mem.MEMORY[i+1], (char)Mem.MEMORY[i+2], (char)Mem.MEMORY[i+3]);//domyslnie powinien jeszcze raz czytać
@@ -222,7 +240,7 @@ namespace Supervisor
             }
             else
                 rejestry.r0 = 1;
-            i += 32;//ustawienie na 64 bajt pamieci podr
+            i += 36;//ustawienie na 70 bajt pamieci podr
             rejestry.r2 = i;
             Mem.MEMORY[i++] = (byte)'U';
             Mem.MEMORY[i++] = (byte)'S';
@@ -296,14 +314,136 @@ namespace Supervisor
             //ustawia r0 = 1 gdy wszysko ok
             //ustawia r0 = 0 gdy błąd składni
         }
-        
+
+        public static void READ_MSG()
+        {
+            int adrPocz = (int)rejestry.r3;
+            int tmp = adrPocz;
+            int adrKom = adrPocz + 32;
+            byte[] tmpB = BitConverter.GetBytes(adrKom);
+           
+
+            Mem.MEMORY[tmp++] = Convert.ToByte('*');
+            Mem.MEMORY[tmp++] = Convert.ToByte('I');
+            Mem.MEMORY[tmp++] = Convert.ToByte('N');
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = 8;
+            Mem.MEMORY[tmp++] = Convert.ToByte('R');
+            Mem.MEMORY[tmp++] = Convert.ToByte('E');
+            Mem.MEMORY[tmp++] = Convert.ToByte('A');
+            Mem.MEMORY[tmp++] = Convert.ToByte('D');
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = 0;
+            if (BitConverter.IsLittleEndian == true)
+            {
+                Mem.MEMORY[tmp++] = tmpB[1];
+                Mem.MEMORY[tmp++] = tmpB[0];
+            }
+            else
+            {
+                Mem.MEMORY[tmp++] = tmpB[3];
+                Mem.MEMORY[tmp++] = tmpB[4];
+            }
+            rejestry.r2 = adrPocz;
+
+        }
+
+        public static void PRINT_MSG()
+        {
+            int adrPocz = (int)rejestry.r3;
+            int adrKom = adrPocz + 9;
+            byte[] tmpB = BitConverter.GetBytes(adrKom);
+
+            int tmp = adrPocz+64;
+            Mem.MEMORY[tmp++] = Convert.ToByte('*');
+            Mem.MEMORY[tmp++] = Convert.ToByte('O');
+            Mem.MEMORY[tmp++] = Convert.ToByte('U');
+            Mem.MEMORY[tmp++] = Convert.ToByte('T');
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = 8;
+            Mem.MEMORY[tmp++] = Convert.ToByte('P');
+            Mem.MEMORY[tmp++] = Convert.ToByte('R');
+            Mem.MEMORY[tmp++] = Convert.ToByte('I');
+            Mem.MEMORY[tmp++] = Convert.ToByte('N');
+            Mem.MEMORY[tmp++] = 0;
+            Mem.MEMORY[tmp++] = Mem.MEMORY[adrPocz+8];
+            if (BitConverter.IsLittleEndian == true)
+            {
+                Mem.MEMORY[tmp++] = tmpB[1];
+                Mem.MEMORY[tmp++] = tmpB[0];
+            }
+            else
+            {
+                Mem.MEMORY[tmp++] = tmpB[3];
+                Mem.MEMORY[tmp++] = tmpB[4];
+            }
+            rejestry.r2 = adrPocz+64;
+        }
+
+        private static int GadrUser=0;
+        public static void INTER_LOAD()
+        {
+            int adrUser;
+            int adrPocz = (int) rejestry.r3;
+            adrUser = (int) rejestry.r8;
+            if (GadrUser==0)
+            {
+                GadrUser=adrUser;
+            }
+            int tmp = adrPocz;
+            int prog = adrPocz + 32;
+            int dl = 0;
+            if (Convert.ToChar(Mem.MEMORY[tmp + 9]) == 'O' && Convert.ToChar(Mem.MEMORY[tmp + 10]) == 'K')
+            {
+                dl = Mem.MEMORY[prog]<<8;
+                dl += Mem.MEMORY[prog + 1];
+                prog += 2;
+                if (Mem.MEMORY[prog] == (byte)rozkaz.KONIEC)
+                {
+                    rejestry.r0 = 1;
+                    rejestry.r2 = rejestry.r3;
+                    int tmp2 = (int) rejestry.r2;
+                    Mem.MEMORY[tmp2++] = Convert.ToByte('U');
+                    Mem.MEMORY[tmp2++] = Convert.ToByte('S');
+                    Mem.MEMORY[tmp2++] = Convert.ToByte('E');
+                    Mem.MEMORY[tmp2++] = Convert.ToByte('R');
+                    Mem.MEMORY[tmp2++] = Convert.ToByte('P');
+                    Mem.MEMORY[tmp2++] = Convert.ToByte('R');
+                    Mem.MEMORY[tmp2++] = Convert.ToByte('O');
+                    Mem.MEMORY[tmp2++] = Convert.ToByte('G');
+
+                }
+                else
+                {
+                    for (int i = 0; i < dl; i++)
+                    {
+                        Mem.MEMORY[GadrUser++] = Mem.MEMORY[prog++];
+                    }
+                    rejestry.r0 = 0;
+                }
+                
+            }
+            else
+            {
+                string sTmp=Convert.ToString(Convert.ToChar(Mem.MEMORY[tmp + 9]));
+                sTmp += Convert.ToString(Convert.ToChar(Mem.MEMORY[tmp + 10]));
+                Console.WriteLine("Otrzymano błędny komunikat podczas ładowania programu USERPROG. Kod: {0}", sTmp);
+            }
+        }
     }
 
     /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    static public class IPLRTN
    {
-       public enum Eprog : byte { IBSUB, EXPUNGE, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER };
+       public enum Eprog : byte { IBSUP, EXPUNGE, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER };
        public static int[] adrProg = new int[25];//adresy początku programów (SVC) nie wszystkie
 
        public static void CWrite(ConsoleColor color, string text)
@@ -343,12 +483,12 @@ namespace Supervisor
            int i = 0;
            int j = 0;
 
-           adrProg[(int)Eprog.IBSUB] = i;
-           i = IBSUB.zaladuj(0);
+           adrProg[(int)Eprog.IBSUP] = i;
+           i = IBSUP.zaladuj(0);
            
 
            adrProg[(int)Eprog.EXPUNGE] = i;
-           i = IBSUB.zaladujEXPUNGE(i);
+           i = IBSUP.zaladujEXPUNGE(i);
            CWrite(ConsoleColor.Cyan, "IBSUB");
            Console.Write(" - wczytano");
            Console.ReadLine();
@@ -446,7 +586,7 @@ namespace Supervisor
            ibsub1.cpu_stan[1] = 0;
            ibsub1.cpu_stan[2] = 0;
            ibsub1.cpu_stan[3] = 0;
-           ibsub1.cpu_stan[4] = adrProg[(int)Eprog.IBSUB];
+           ibsub1.cpu_stan[4] = adrProg[(int)Eprog.IBSUP];
 
            Console.Write("Tworzenie PCB dla drugiego strumienia zlecień");
            Console.ReadLine();
@@ -456,7 +596,7 @@ namespace Supervisor
            ibsub2.cpu_stan[1] = 0;
            ibsub2.cpu_stan[2] = 0;
            ibsub2.cpu_stan[3] = 0;
-           ibsub2.cpu_stan[4] = adrProg[(int)Interpreter.Inter.Eprog.IBSUB];
+           ibsub2.cpu_stan[4] = adrProg[(int)Interpreter.Inter.Eprog.IBSUP];
 
            Console.Write("Ustawianie wskazników we wszystkich PCB");
            Console.ReadLine();
