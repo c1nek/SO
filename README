@@ -9,3 +9,15 @@ SVC V - (metoda) przyjmuje w rejestrze 2 referencje na semafor. Wcześniej trzeb
 SVC E - (w tablicy bajtów) przydział pamięci podręcznej 256 bajtów i zwrócenie adresu w rejestrze 3. Jest to ten sam program co XA. Wykonywany tylko przy r9==0
 
 SVC Y, Eprog - (w tablicy bajtów), Eprog oznacza adres komórki z tablicy IPLRTN.adrProg zawierające początkowy adres programu
+
+SVC S - (w tablicy bajtów) przyjmuje adres danych w rejestrze 2. Dane: NAZWA(8 bajtów),DŁUGOŚĆ TEKSTU(1 bajt), TEKST(w zależności od poprzedniego pola), wysyła komunikat do odbiorcy sprecyzowanego w 
+
+
+
+
+
+
+
+INFO dla programu IN/OUT
+przy  odczytywaniu danych z adresu podanego w xxxx pierwsze 2 bajty to długość łańcucha bajtów. kolejne to adres początkowy
+przy zapisywaniu danych do pamięci pod adresem xxxx pierwsze 2 bajty oznaczają długoś łańcucha zapisanego
