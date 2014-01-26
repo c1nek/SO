@@ -100,6 +100,7 @@ namespace Process
         {
 
         };
+
         public static int zaladujXY(int m)
         {
             int i;

@@ -14,10 +14,10 @@ namespace Interpreter
     {
         public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
-        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM};
+        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG};
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
         public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN ,PRZESZUKAJ_LISTE, PODRECZNA};
-        public enum Eprog : byte { IBSUB, IN, OUT=1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
+        public enum Eprog : byte { IBSUB, IN, OUT=1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
 
 
         public static byte[] LFlag = new byte[100];//tablica adresów flag
@@ -2186,16 +2186,39 @@ namespace Interpreter
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JZ)
             {
                 rejestry.lr++;
-                if ((int)rejestry.r0 == 0)
-                    rejestry.lr = LFlag[(int)Mem.MEMORY[rejestry.lr]];
-                else
+                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
+                {
                     rejestry.lr++;
-            }//JZ skok przy r0==0 do flagi działa                                               (JZ, <nr flagi>)
+                    if ((int)rejestry.r0 == 0)
+                        rejestry.lr = LFlag[(int)Mem.MEMORY[rejestry.lr]];
+                    
+                        rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.PROG)
+                {
+                    rejestry.lr++;
+                    if ((int)rejestry.r0 == 0)
+                    rejestry.lr = IPLRTN.adrProg[(int)Mem.MEMORY[rejestry.lr]];
+                    
+                    rejestry.lr++;
+                }
+            }//JZ skok przy r0==0 do flagi działa                                               (JZ, WART|PROG, numer flagi lub nazwa programu)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JMP)
             {
                 rejestry.lr++;
-                rejestry.lr = LFlag[(int)Mem.MEMORY[rejestry.lr]];
-            }//JMP skok bezwarunkowy do flagi                                                   (JZ, <nr flagi>)
+                if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
+                {
+                    rejestry.lr++;
+                    rejestry.lr = LFlag[(int)Mem.MEMORY[rejestry.lr]];
+                    rejestry.lr++;
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.PROG)
+                {
+                    rejestry.lr++;
+                    rejestry.lr = IPLRTN.adrProg[(int)Mem.MEMORY[rejestry.lr]];
+                    rejestry.lr++;
+                }
+            }//JMP skok bezwarunkowy do flagi                                                   (JMP, WART|PROG, numer flagi lub nazwa programu)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.POWROT)
             {
                 int tmp = stos.Pop();

@@ -13,111 +13,130 @@ namespace Supervisor
 {
     public static class IBSUB
     {
-        public enum rozkaz : byte { SVC, ADD, MOV, DIV, SUB, INC, DEC, JUMPF, JUMPR, JUMP, METHOD, FLAG };
+        public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
-        public enum wartosc_TYP : byte { R0, R1, R2, R3, LR, MEM, WART, SEM };
+        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN };
-        public enum Eprog : byte { IBSUB, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA };
+        public enum Eprog : byte { IBSUB, EXPUNGE, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER};
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
         
-        /*0000*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,       (byte)wartosc_TYP.LR,
-                    (byte)rozkaz.ADD,       (byte)wartosc_TYP.WART,     11,
-                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R0,
-                    (byte)rozkaz.JUMPF,     (byte)wartosc_TYP.WART,     7,
-                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.A,
-                    1,0,0,0,4,
-                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,       (byte)wartosc_TYP.R2,
-                    (byte)rozkaz.ADD,       (byte)wartosc_TYP.WART,     2,
-                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R0,
-                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R3,       (byte)wartosc_TYP.MEM,
-
                     (byte)rozkaz.SVC,       (byte)wartosc_SVC.E,
 
-        
-        /*000E*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,           //przepisanie adresu pamięci roboczej do rejestru 1
-        /*0011*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
-        /*0014*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*0016*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'I',                      //wpisanie znaku do komórki pamięci w rejestrze 1
-        /*0019*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*001B*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'N',                      //wpisanie znaku do komórki pamięci w rejestrze 1
-        /*001E*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*0020*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R3,           //wpisanie adresu pamięci roboczej do rejestru 2
-        /*0023*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,                                        //wywołanie programu tworzącego proces (program pobiera nazwę procesu z rejestru 2)
-        
-        /*0025*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,8,
-        /*002A*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,1,
-        /*002E*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /*0030*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,0,       //wpisanie adresu uruchamianego programu (w tym wypadku *IN) jest to adres 256 + adres początku 
-        /*xxxx*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,0,     //ustawienie rejestru 1 tak by wskazywał adres urządzenia
-        /*0033*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,                                        //uruchomienie procesu
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('*'),
+                    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('I'),
+                    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('N'),
+                    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R3,
+                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,
+                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,        (byte)Eprog.IN,                                     //Uruchomienie procesu *IN
+
  
-        /*0035*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,           //przepisanie adresu pamięci roboczej do rejestru 1
-        /*0038*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
-        /*003B*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*003D*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'O',                      //wpisanie znaku do komórki pamięci w rejestrze 1
-        /*0040*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*0042*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'U',                      //wpisanie znaku do komórki pamięci w rejestrze 1
-        /*0045*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /*0047*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'T',                      //wpisanie znaku do komórki pamięci w rejestrze 1
-        /*004A*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R3,           //wpisanie adresu pamięci roboczej do rejestru 2
-        /*004D*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,                                        //wywołanie programu tworzącego proces (program pobiera nazwę procesu z rejestru 2)
-        
-        /*004F*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,8,
-        /*0054*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,1,
-        /*0058*/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /*005A*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,0,       //wpisanie adresu uruchamianego programu (w tym wypadku *IN) jest to adres 256 + adres początku procesu *IBSUB
-        /*005E*/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,0,
-        /*005E*/    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,                                        //uruchomienie procesu
-                    
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,               
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('*'),                      
+                    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                           
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('O'),                      
+                    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                           
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('U'),                      
+                    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                           
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('T'),
+                    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                           
+                    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,       (byte)wartosc_TYP.R3,               
+                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,                                            
+                    (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,        (byte)Eprog.OUT,                                    //Uruchomienie procesu *OUT
 
+                    /////////////////////////////////////////////////////////////////////////////////////////////////////
+                    (byte)rozkaz.FLAG, 0,///////////////////////////////////////////////////////////////////FLAGA 0
+                    /////////////////////////////////////////////////////////////////////////////////////////////////
 
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,           //przepisanie adresu pamięci roboczej do rejestru 1
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'*',                      //wpisanie znaku do komórki pamięci w rejestrze 1
-        /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'I',                      //wpisanie znaku do komórki pamięci w rejestrze 1
-        /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                       //zwiększenie wartości (adresu) w rejestrze 1 o jeden
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'N',                      //wpisanie znaku do komórki pamięci w rejestrze 1
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,                                   //przepisanie adresu pamięci roboczej do rejestru 1
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('*'),             //wpisanie znaku do komórki pamięci w rejestrze 1
+        /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                                               //zwiększenie wartości (adresu) w rejestrze 1 o jeden
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('I'),             //wpisanie znaku do komórki pamięci w rejestrze 1
+        /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                                               //zwiększenie wartości (adresu) w rejestrze 1 o jeden
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('N'),             //wpisanie znaku do komórki pamięci w rejestrze 1
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,       
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,8,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      8,                             //określenie długości komunikatu
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      8,                                                      //określenie długości komunikatu
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'R',                      //zapisanie komunikatu
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('R'),             //zapisanie komunikatu
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'E',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('E'),
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'A',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('A'),
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)'D',
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('D'),
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)0,//
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,0,//
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)0,
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,0,
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,(byte)0,
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,0,
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
                 (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,       (byte)wartosc_TYP.R3,
                 (byte)rozkaz.ADD,       (byte)wartosc_TYP.WART,     32,
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.R0,
-                (byte)rozkaz.SVC,       (byte)wartosc_SVC.S,                                        //wysłanie komunikatu wskazywanego przez reg 2 oczekiwanie na karte job pod adresem 32 pamięci roboczej
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.S,                                                                //wysłanie komunikatu wskazywanego przez reg 2 oczekiwanie na karte job pod adresem 32 pamięci roboczej
 
-                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.CZYSC_PODR, (byte)wartosc_TYP.R3, (byte)wartosc_TYP.WART, (byte)1, (byte)0,
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R0,                                   //wpisanie adresu miejsca komunikatu od IN/OUT
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R4,       (byte)wartosc_TYP.R0,
 
-                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.PRZYG_XR,  (byte)wartosc_TYP.R2, (byte)wartosc_TYP.WART, 32,
-                (byte)rozkaz.SVC,       (byte)wartosc_SVC.R,
-                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.INTER_KOM,
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.PRZYG_XR,  (byte)wartosc_TYP.R2, (byte)wartosc_TYP.WART, 2,    //R2 wskazuje na początek pamięci podręcznej, pole na komunikat = 2 bajty
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.R,                                                                //czekanie na komunikat (OK|NO)
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.INTER_KOM,                                                     //ustawia rejestry pod utworzenie procesu uzytkownika
 
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
+                (byte)rozkaz.JZ,        Convert.ToByte(wartosc_TYP.WART), 0, ////////////////////////SKOK do flagi 0
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////
+                //////SCAN//////SCAN//////SCAN//////SCAN//////SCAN//////SCAN//////SCAN//////SCAN//////SCAN///////////////
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,                                                                //stworzenie PCB USERPROG
+                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.SCAN,                                                          //pobranie pola o wielkosci i jego interpretacja jeżeli jest nie poprawne EXPUNGE
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,           (byte)wartosc_TYP.R6,
                 (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,            (byte)Eprog.IN,
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,           (byte)wartosc_TYP.R7,
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,            (byte)Eprog.IN,
 
-                (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.SCAN,
+                (byte)rozkaz.JZ,        (byte)wartosc_TYP.PROG,         (byte)Eprog.EXPUNGE,
+
+                //////////////////////////////////////////////////////////////////////////////////////////////////////////
+                /////LOAD///////LOAD////LOAD////////LOAD/////LOAD////LOAD//////LOAD//////LOAD////LOAD/////LOAD///////////
+                /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,           (byte)wartosc_TYP.R5,
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,           (byte)wartosc_TYP.MEM,
+                (byte)rozkaz.MUL,       (byte)wartosc_TYP.WART,         8,
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,          (byte)wartosc_TYP.R0,
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,           (byte)wartosc_TYP.R1,   //pomnożenie rozmiaru z kary job razy 8
+                (byte)rozkaz.SVC,       (byte)wartosc_SVC.A,                                    //Przydzielenie pamięci na program użytkownika
+                (byte)rozkaz.INC,       (byte)wartosc_TYP.R2,
+                (byte)rozkaz.INC,       (byte)wartosc_TYP.R2,                                   
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R8,           (byte)wartosc_TYP.R2,   //zapamiętanie adresu pamięci użytkownika
+
+                //////////////////////////////////////////////////////////////////////////////////////////
+                (byte)rozkaz.FLAG,      1,//////////////////////////////////////////////////FLAGA 1
+                //////////////////////////////////////////////////////////////////////////////////////////
 
 
-                
-        /**/    
 
-        /*,"","","","",""*/};
+        };
 
+
+        private static byte[] EXPUNGE = new byte[]{
+
+
+            
+            (byte)rozkaz.JMP, 0//Powrót z pogramu EXPUNGE
+        };
 
 
 
@@ -128,6 +147,16 @@ namespace Supervisor
             for (i = 0; i < mem.Length; i++)
             {
                 Mem.MEMORY[i+m] = mem[i];
+            }
+            return m + i + 1;
+        }
+
+        public static int zaladujEXPUNGE(int m)
+        {
+            int i;
+            for (i = 0; i < EXPUNGE.Length; i++)
+            {
+                Mem.MEMORY[i + m] = EXPUNGE[i];
             }
             return m + i + 1;
         }
@@ -180,7 +209,7 @@ namespace Supervisor
             }
             if (komunikat != "OK")
             {
-                System.Console.WriteLine("Blad: zly nadawca. Oczekiwana wartosc to *IN. Otrzymano {0}", nazwa);
+                System.Console.WriteLine("Blad: zly komunikat. Oczekiwana wartosc to OK. Otrzymano {0}", nazwa);
                 Console.ReadLine();
                 Environment.Exit(0);
             }
@@ -189,8 +218,10 @@ namespace Supervisor
             {
                 System.Console.WriteLine("Blad: inna karta. Oczekiwana wartosc to $JOB. Otrzymano {0}{1}{2}{3}", (char)Mem.MEMORY[i], (char)Mem.MEMORY[i+1], (char)Mem.MEMORY[i+2], (char)Mem.MEMORY[i+3]);//domyslnie powinien jeszcze raz czytać
                 Console.ReadLine();
-                Environment.Exit(0);
+                rejestry.r0 = 0;
             }
+            else
+                rejestry.r0 = 1;
             i += 32;//ustawienie na 64 bajt pamieci podr
             rejestry.r2 = i;
             Mem.MEMORY[i++] = (byte)'U';
@@ -203,13 +234,67 @@ namespace Supervisor
             Mem.MEMORY[i++] = (byte)'G';
 
 
-
         }
 
-        public static void SCAN()
+        public static void SCAN()//zapamiętuje wielkość w rejestrze 5, wskaźnik na nazwę IN w rejestrze 6, wskaźnik na nazwę OUT w rejestrze 7
         {
+            int adrPoczatek = (int) rejestry.r4;
+            int tmp = adrPoczatek;
+            int tmp2;
+            string tekst;
+            tekst = System.Text.Encoding.UTF8.GetString(Mem.MEMORY, tmp, 5);
+            tmp += 5;
+            if (tekst != "$JOB,")
+            {
+                Console.WriteLine("Błędna składnia: {0}", tekst);
+                rejestry.r0 = 0;
+                return;
+            }
+            if (Convert.ToChar(Mem.MEMORY[tmp + 2]) != ',')
+            {
+                Console.WriteLine("Błędna składnia $JOB. Znak: {0}", tmp);
+                rejestry.r0 = 0;
+                return;
+            }
+            rejestry.r5 = Mem.MEMORY[tmp];
+            tmp += 3;
+            tmp2=tmp;
+            tekst = null;
+            for (; Convert.ToChar(Mem.MEMORY[tmp]) != '='; tmp++)
+            {
+                tekst += Convert.ToChar(Mem.MEMORY[tmp]);
+                Console.WriteLine("Nazwa Procesu: {0}", tekst);
+            }
+            if (Convert.ToChar(Mem.MEMORY[tmp + 1]) == 'I')
+            {
+                rejestry.r6 = tmp2;
+                tmp += 4;
+            }
+            else if (Convert.ToChar(Mem.MEMORY[tmp + 1]) == 'O')
+            {
+                rejestry.r7 = tmp2;
+                tmp += 5;
+            }
+            for (; Convert.ToChar(Mem.MEMORY[tmp]) != '='; tmp++)
+            {
+                tekst += Convert.ToChar(Mem.MEMORY[tmp]);
+                Console.WriteLine("Nazwa Procesu: {0}", tekst);
+            }
+            if (Convert.ToChar(Mem.MEMORY[tmp + 1]) == 'I')
+            {
+                rejestry.r6 = tmp2;
+                
+            }
+            else if (Convert.ToChar(Mem.MEMORY[tmp + 1]) == 'O')
+            {
+                rejestry.r7 = tmp2;
+                
+            }
+            rejestry.r0 = 1;
 
             //schemat 7.9
+            //ustawia r0 = 1 gdy wszysko ok
+            //ustawia r0 = 0 gdy błąd składni
         }
         
     }
@@ -218,7 +303,7 @@ namespace Supervisor
 
    static public class IPLRTN
    {
-       public enum Eprog : byte { IBSUB, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
+       public enum Eprog : byte { IBSUB, EXPUNGE, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER };
        public static int[] adrProg = new int[25];//adresy początku programów (SVC) nie wszystkie
 
        public static void CWrite(ConsoleColor color, string text)
@@ -260,6 +345,10 @@ namespace Supervisor
 
            adrProg[(int)Eprog.IBSUB] = i;
            i = IBSUB.zaladuj(0);
+           
+
+           adrProg[(int)Eprog.EXPUNGE] = i;
+           i = IBSUB.zaladujEXPUNGE(i);
            CWrite(ConsoleColor.Cyan, "IBSUB");
            Console.Write(" - wczytano");
            Console.ReadLine();
@@ -334,7 +423,7 @@ namespace Supervisor
            i = Proc.zaladujXQUE(i);
            CWrite(ConsoleColor.Cyan, "XQUE ");
            Console.Write("- wczytano");
-           Console.ReadLine();//wpisywanie programów do pamięci głównej i początku każdego z nich do tablicy
+           Console.ReadLine();//wpisywanie programów do pamięci głównej i początku każdego z nich do tablicy DODAC EXPUNGE!
 
            Console.Write("Opisywanie wolnej pamięci przy pomocy bloków FSB");
            if (Mem.start(i) == false) //całą pamięć wolną opisuje przy pomocy bloków FSB 
