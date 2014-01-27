@@ -340,7 +340,7 @@ namespace Supervisor
 
         public static void SCAN()//zapamiętuje wielkość w rejestrze 5, wskaźnik na nazwę IN w rejestrze 6, wskaźnik na nazwę OUT w rejestrze 7
         {
-            int adrPoczatek = (int) rejestry.r4;
+            int adrPoczatek = (int) rejestry.r4+2;
             int tmp = adrPoczatek;
             int tmp2;
             string tekst;
