@@ -17,7 +17,7 @@ namespace Supervisor
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG };//dodac readmsg
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2 , EXPUNGE3, EXPUNGE4 };
         public enum Eprog : byte { IBSUP, EXPUNGE, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER};
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
@@ -117,6 +117,7 @@ namespace Supervisor
                 (byte)rozkaz.MUL,       (byte)wartosc_TYP.WART,         8,
                 (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,          (byte)wartosc_TYP.R0,
                 (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,           (byte)wartosc_TYP.R1,   //pomnożenie rozmiaru z kary job razy 8
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R9,           (byte)wartosc_TYP.R0,   //zapamiętanie wielkosci pamieci
                 (byte)rozkaz.SVC,       (byte)wartosc_SVC.A,                                    //Przydzielenie pamięci na program użytkownika
                 (byte)rozkaz.INC,       (byte)wartosc_TYP.R2,
                 (byte)rozkaz.INC,       (byte)wartosc_TYP.R2,                                   
@@ -151,14 +152,97 @@ namespace Supervisor
 
         private static byte[] EXPUNGE = new byte[]{
 
+            (byte)rozkaz.METHOD,       (byte)wartosc_METHOD.EXPUNGE1,//pobranie running
 
+            (byte)rozkaz.FLAG,          2,
+
+            (byte)rozkaz.METHOD,        (byte)wartosc_METHOD.EXPUNGE2,//sprawdzenie czy nazwa zaczyna się od * jeżeli nie to wpisuje nazwę do pamięci podr i ustawia na nia r2 i r0=1 else r0=0
+            (byte)rozkaz.JUMPF,         (byte)wartosc_TYP.R0,   4,
+            (byte)rozkaz.SVC,           (byte)wartosc_SVC.Z,
+            (byte)rozkaz.SVC,           (byte)wartosc_SVC.D,
+            (byte)rozkaz.METHOD,        (byte)wartosc_METHOD.EXPUNGE3,//pobiera następny blok i sprawdza czy running wskazuje na ten blok r0=0 jezeli wskazuje, r0=1 jezeli nie
+            (byte)rozkaz.JZ,            (byte)wartosc_TYP.WART, 2,
+            (byte)rozkaz.METHOD,        (byte)wartosc_METHOD.EXPUNGE4,//sprawdza czy rejestry r8 i r9 zawierają wartości i jeżeli tak to przygotowuje pamięć podręczną i r0=1 inaczej r0=0
+            (byte)rozkaz.JZ,            (byte)wartosc_TYP.WART, 0,
+            (byte)rozkaz.SVC,           (byte)wartosc_SVC.F,
             
-            (byte)rozkaz.JMP, 0//Powrót z pogramu EXPUNGE
+            (byte)rozkaz.JMP,           (byte)wartosc_TYP.WART, 0//Powrót z pogramu EXPUNGE
         };
 
 
+        public static void EXPUNGE1()
+        {
+            rejestry.r4 = zawiadowca.RUNNING;
+        }
 
+        public static void EXPUNGE2()
+        {
+            if (((PCB)rejestry.r4).NAME[0] == '*')
+            {
+                rejestry.r0 = 0;
+                return;
+            }
+            else
+            {
+                int adr = (int)rejestry.r3;
+                int j = 0;
+                for (; j < ((PCB)rejestry.r4).NAME.Length; adr++)
+                {
 
+                    Mem.MEMORY[adr] = Convert.ToByte(((PCB)rejestry.r4).NAME[j]);
+                        j++;
+                }
+                for (;j<8 ; j++)
+                {
+                    Mem.MEMORY[adr] = 0;
+                    adr++;
+                }
+                rejestry.r2 = rejestry.r3;
+                rejestry.r0 = 1;
+            }
+        }
+
+        public static void EXPUNGE3()
+        {
+            rejestry.r4 = ((PCB)rejestry.r4).NEXT_PCB_GROUP;
+            if (((PCB)rejestry.r4) == zawiadowca.RUNNING)
+            {
+                rejestry.r0 = 1;
+            }
+            else
+            {
+                rejestry.r0 = 0;
+            }
+        }
+        public static void EXPUNGE4()
+        {
+            if ((int)rejestry.r8 >= 100 && (int)rejestry.r9 >= 8)
+            {
+                int adr = (int) rejestry.r3;
+                rejestry.r2=adr;
+                byte[] tmpB = BitConverter.GetBytes((int)rejestry.r9);
+                byte[] tmpC = BitConverter.GetBytes((int)rejestry.r8);
+                if (BitConverter.IsLittleEndian == true)
+                {
+                    Mem.MEMORY[adr++] = tmpB[1];
+                    Mem.MEMORY[adr++] = tmpB[0];
+                    Mem.MEMORY[adr++] = tmpC[1];
+                    Mem.MEMORY[adr++] = tmpC[0];
+                }
+                else
+                {
+                    Mem.MEMORY[adr++] = tmpB[2];
+                    Mem.MEMORY[adr++] = tmpB[3];
+                    Mem.MEMORY[adr++] = tmpC[2];
+                    Mem.MEMORY[adr++] = tmpC[3];
+                }
+                rejestry.r0 = 1;
+            }
+            else
+            {
+                rejestry.r0 = 0;
+            }
+        }
         public static int zaladuj(int m)
         {
             int i;
@@ -345,8 +429,8 @@ namespace Supervisor
             }
             else
             {
+                Mem.MEMORY[tmp++] = tmpB[2];
                 Mem.MEMORY[tmp++] = tmpB[3];
-                Mem.MEMORY[tmp++] = tmpB[4];
             }
             rejestry.r2 = adrPocz;
 
@@ -587,6 +671,13 @@ namespace Supervisor
            ibsub1.cpu_stan[2] = 0;
            ibsub1.cpu_stan[3] = 0;
            ibsub1.cpu_stan[4] = adrProg[(int)Eprog.IBSUP];
+           ibsub1.cpu_stan[6] = 0;
+           ibsub1.cpu_stan[7] = 0;
+           ibsub1.cpu_stan[8] = 0;
+           ibsub1.cpu_stan[9] = 0;
+           ibsub1.cpu_stan[10] = 0;
+           ibsub1.cpu_stan[11] = 0;
+
 
            Console.Write("Tworzenie PCB dla drugiego strumienia zlecień");
            Console.ReadLine();
@@ -597,6 +688,12 @@ namespace Supervisor
            ibsub2.cpu_stan[2] = 0;
            ibsub2.cpu_stan[3] = 0;
            ibsub2.cpu_stan[4] = adrProg[(int)Interpreter.Inter.Eprog.IBSUP];
+           ibsub1.cpu_stan[6] = 0;
+           ibsub1.cpu_stan[7] = 0;
+           ibsub1.cpu_stan[8] = 0;
+           ibsub1.cpu_stan[9] = 0;
+           ibsub1.cpu_stan[10] = 0;
+           ibsub1.cpu_stan[11] = 0;
 
            Console.Write("Ustawianie wskazników we wszystkich PCB");
            Console.ReadLine();

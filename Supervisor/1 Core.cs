@@ -137,6 +137,10 @@ namespace Processor
                 CWrite(ConsoleColor.Green, "Zawiadowca");
                 Console.ReadLine();
 
+                
+                
+                
+                
                 if (licznik == 50 || wymusZmiane)
                 {
                     wymusZmiane = false;
@@ -194,7 +198,6 @@ namespace Processor
             cpu_stan[2] = rejestry.r2;
             cpu_stan[3] = rejestry.r3;
             cpu_stan[4] = rejestry.lr;
-            cpu_stan[5] = rejestry.ab;
             cpu_stan[6] = rejestry.r4;
             cpu_stan[7] = rejestry.r5;
             cpu_stan[8] = rejestry.r6;
@@ -212,7 +215,6 @@ namespace Processor
             rejestry.r2 = cpu_stan[2];
             rejestry.r3 = cpu_stan[3];
             rejestry.lr = (int)cpu_stan[4];
-            rejestry.ab = (bool)cpu_stan[5];
             rejestry.r4 = cpu_stan[6];
             rejestry.r5 = cpu_stan[7];
             rejestry.r6 = cpu_stan[8];
@@ -252,7 +254,7 @@ namespace Processor
         public static object r8 = 0;
         public static object r9 = 0;
         public static int lr = 0;    //licznik rozkazów
-        public static bool ab = false;  //adresowanie bezwzględne
+
 
 
 
