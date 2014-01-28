@@ -22,6 +22,8 @@ SVC N - znajduje blok o podanej nazwie wskazanej przez rejestr 2 (nazwa i obszar
 
 SVC P - (metoda) przyjmuje w rejestrze 2 referencje na semafor. Wcześniej trzeba użyć MOV, SEM. sem-- Jeżeli sem<0 blokuje proces i wymusza zmianę
 
+SVC R - czytanie komunikatu, rejestr 2 (nazwa nadawcy, wielkosc obszaru na odbierany tekst, obszar przeznazcony na komunikat). Operacja P na semaforze _COMMON, pobranie pierwszego komunikatu z listy
+
 SVC V - (metoda) przyjmuje w rejestrze 2 referencje na semafor. Wcześniej trzeba użyć MOV, SEM. sem ++ Jeżeli sem<=0 odblokowuje pierwszy proces i ustawia na niego wskazniki NEXTTRY.
 
 
