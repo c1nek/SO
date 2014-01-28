@@ -2,6 +2,12 @@ Opis wszystkich wywołań SVC
 
 SVC A - (w tablicy bajtów) w rejestrze 2 przyjmuje wskaźnik na początek 5 bajtów(2 bajty wielkość miejsca do przydzielenia, 2 bajty na zwrócenie adresu, 1 bajt padding - ilość bajtów odstępu). Przydziela pamięć i zwraca adres początku pamięci w wyznaczonym miejscu.
 
+SVC B - w rejestrze 2 przyjmuje wskaźnik na początek 5 bajtów(2 bajty wielkość miejsca do przydzielenia, 2 bajty na zwrócenie adresu, 1 bajt padding - ilość bajtów odstępu). Dokonuje zmiany połączeń i ustawia format bloku FSB.
+
+SVC C - w rejestrze 2 przyjmuje wskaźnik na początek (nazwa procesu do utworzenia). Sprawdza czy nazwa nie występuje w grupie, wywołuje XA, nowy blok: STOPPED = 1, BLOCKED = 0; wywołanie XF.
+
+SVC D - w rejestrze 2 przyjmuje wskaźnik na początek (nazwa procesu do usunięcia). Zatrzymanie za pomocą XZ, określenie adresu - NX, odłączenie bloku PCB od łańcuchów - XJ, zwolnienie pamięci - XF.
+
 SVC P - (metoda) przyjmuje w rejestrze 2 referencje na semafor. Wcześniej trzeba użyć MOV, SEM. sem-- Jeżeli sem<0 blokuje proces i wymusza zmianę
 
 SVC V - (metoda) przyjmuje w rejestrze 2 referencje na semafor. Wcześniej trzeba użyć MOV, SEM. sem ++ Jeżeli sem<=0 odblokowuje pierwszy proces i ustawia na niego wskazniki NEXTTRY.
