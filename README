@@ -8,11 +8,17 @@ SVC C - w rejestrze 2 przyjmuje wskaźnik na początek (nazwa procesu do utworze
 
 SVC D - w rejestrze 2 przyjmuje wskaźnik na początek (nazwa procesu do usunięcia). Zatrzymanie za pomocą XZ, określenie adresu - NX, odłączenie bloku PCB od łańcuchów - XJ, zwolnienie pamięci - XF.
 
+SVC E - (w tablicy bajtów) przydział pamięci podręcznej 256 bajtów i zwrócenie adresu w rejestrze 3. Jest to ten sam program co XA. Wykonywany tylko przy r9==0
+
+SVC F - zapisuje do rejestru 1 adres pamięci (MEM) od której zaczyna się 5 bajtów(2 bajty wielkość zwalnianego obszaru, 2 bajty adres, 1 bajt padding) blokuje dostęp do listy, przeszukuje listę, wywołuje XR
+
 SVC P - (metoda) przyjmuje w rejestrze 2 referencje na semafor. Wcześniej trzeba użyć MOV, SEM. sem-- Jeżeli sem<0 blokuje proces i wymusza zmianę
 
 SVC V - (metoda) przyjmuje w rejestrze 2 referencje na semafor. Wcześniej trzeba użyć MOV, SEM. sem ++ Jeżeli sem<=0 odblokowuje pierwszy proces i ustawia na niego wskazniki NEXTTRY.
 
 SVC E - (w tablicy bajtów) przydział pamięci podręcznej 256 bajtów i zwrócenie adresu w rejestrze 3. Jest to ten sam program co XA. Wykonywany tylko przy r9==0
+
+
 
 SVC Y, Eprog - (w tablicy bajtów), Eprog oznacza adres komórki z tablicy IPLRTN.adrProg zawierające początkowy adres programu, w rejestrze drugim jest adres komórki pamięci z nazwą procesu do uruchomienia.
 
