@@ -1,6 +1,6 @@
 Opis wszystkich wywołań SVC
 
-SVC A - (w tablicy bajtów) w rejestrze 2 przyjmuje wskaźnik na początek 5 bajtów(2 bajty wielkość miejsca do przydzielenia, 2 bajty na zwrócenie adresu, 1 bajt padding - ilość bajtów odstępu). Przydziela pamięć i zwraca adres początku pamięci w wyznaczonym miejscu.
+SVC A - (w tablicy bajtów) w rejestrze 2 przyjmuje wskaźnik na początek 5 bajtów(2 bajty wielkość miejsca do przydzielenia, 2 bajty na zwrócenie adresu. Przydziela pamięć i zwraca adres początku pamięci w wyznaczonym miejscu.
 
 SVC B - w rejestrze 2 przyjmuje wskaźnik na początek 5 bajtów(2 bajty wielkość miejsca do przydzielenia, 2 bajty na zwrócenie adresu, 1 bajt padding - ilość bajtów odstępu). Dokonuje zmiany połączeń i ustawia format bloku FSB.
 
