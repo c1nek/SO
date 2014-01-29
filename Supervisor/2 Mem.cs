@@ -43,15 +43,16 @@ namespace Memory
             return m + i + 1;
         }
         
+ 
         public static void PODRECZNA()
         {
-            int best = 0;
+            int best = -1;
             int temp = 65536;
             int temp1 = 256;
             if (temp1 > 65536)
             {
                 Console.Write("Rozmiar pamięci mniejszy od rozmiaru procesu!!!");
-
+ 
             }
             else
             {
@@ -64,28 +65,34 @@ namespace Memory
                     }
                 }
             }
-
-            int tmp = best;
-            tmp = 0x00001100;
-            tmp = tmp >> 8;
-            Mem.MEMORY[(int)rejestry.lr + 2] = (byte)tmp;
-            tmp = 0x00000011;
-            Mem.MEMORY[(int)rejestry.lr + 3] = (byte)tmp;
+ 
+            if (best != -1)
+            {
+ 
+                rejestry.r3 = best;
+                rejestry.r2 = 0;
+ 
+            }
+            else
+            {
+                best = 1;
+                rejestry.r2 = best;
+            }
         }
-
+ 
         public static void PRZESZUKAJ_LISTE()
         {
-            int best = 0;
+            int best = -1;
             int temp = 65536;
-
+ 
             int temp1 = Mem.MEMORY[(int)rejestry.r1];
             temp1 = temp1 << 8;
             temp1 += Mem.MEMORY[(int)rejestry.r1 + 1];
-
+ 
             if (temp1 > 65536)
             {
                 Console.Write("Rozmiar pamięci mniejszy od rozmiaru procesu!!!");
-
+ 
             }
             else
             {
@@ -98,54 +105,91 @@ namespace Memory
                     }
                 }
             }
-
-            int tmp = best;
-            tmp = 0x00001100;
-            tmp = tmp >> 8;
-            Mem.MEMORY[(int)rejestry.lr + 2] = (byte)tmp;
-            tmp = 0x00000011;
-            Mem.MEMORY[(int)rejestry.lr + 3] = (byte)tmp;
+ 
+            if (best != -1)
+            {
+                int tmp = best;
+                tmp = 0x00001100;
+                tmp = tmp >> 8;
+                Mem.MEMORY[(int)rejestry.lr + 2] = (byte)tmp;
+                tmp = 0x00000011;
+                Mem.MEMORY[(int)rejestry.lr + 3] = (byte)tmp;
+                rejestry.r2 = 0;
+ 
+ 
+            }
+            else
+            {
+                best = 1;
+                rejestry.r2 = best;
+            }
         }
-
+ 
+        public static void WART_MEMORY()
+        {
+            rejestry.r0 = MEMORY_SEM.VALUE;
+        }
+ 
         public static byte[] XA = new byte[]
-            {
-     
-                (byte)rozkaz.MOV,(byte)wartosc_TYP.R1,(byte)wartosc_TYP.R2,  //Zapisuje do R1 adres pamięci(MEM) od której zaczyna się 5bajtów (rozmiar,adres,pading)
-                (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//Blokuje dostęp do listy
-                (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R9,12,
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.PRZESZUKAJ_LISTE, //Przeszukuje liste funkcja w C#
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.B, //Wywołuje XB
-                (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
-                (byte)rozkaz.JUMPF,(byte)wartosc_TYP.WART,2,
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.PODRECZNA,
-                (byte)rozkaz.POWROT,
-            };
-
+        {
+ 
+            (byte)rozkaz.MOV,(byte)wartosc_TYP.R1,(byte)wartosc_TYP.R2,  //Zapisuje do R1 adres pamięci(MEM) od której zaczyna się 5bajtów (rozmiar,adres,pading)
+            (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//Blokuje dostęp do listy
+            (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R9,28,//Skok w przypadku gdy chodzi tylko o pamięć podręczną
+            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.PRZESZUKAJ_LISTE,//Przeszukuje liste funkcja w C#
+            (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R2,14,//Jak znalazło wolne bloki to skacze do XB, jak nie znalazło leci dalej
+            (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
+            (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.MEMORY,
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//dodanie procesu do oczekujacych, semafor MEMORY
+            (byte)rozkaz.JUMPF,(byte)wartosc_TYP.WART,30,//Jeżeli zrobiło P na semaforze MEMORY to skacze do POWROT
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.B, //Wywołuje XB
+            (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
+            (byte)rozkaz.JUMPF,(byte)wartosc_TYP.WART,20,//Skok jeżeli normalnie przydzielono blok
+            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.PODRECZNA,
+            (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R2,14,//Jak znalazło wolne bloki to skacze do XB, jak nie znalazło leci dalej
+            (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
+            (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.MEMORY,
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//dodanie procesu do oczekujacych, semafor MEMORY
+            (byte)rozkaz.JUMPF,(byte)wartosc_TYP.WART,2,//Jeżeli zrobiło P na semaforze MEMORY to skacze do POWROT
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.B,
+            (byte)rozkaz.POWROT,
+ 
+        };
+ 
         public static byte[] XF = new byte[]
-            {
-                (byte)rozkaz.MOV,(byte)wartosc_TYP.R1,(byte)wartosc_TYP.R2,  //Zapisuje do R1 adres pamięci(MEM) od której zaczyna się 5bajtów (rozmiar,adres,pading)
-                (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,(byte)rozkaz.SVC,(byte)wartosc_SVC.P,//Blokuje dostęp do listy
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.PRZESZUKAJ_LISTE, //Przeszukuje liste funkcja w C#
-                (byte)wartosc_SVC.B, //Wywołuje XB
-                (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,(byte)rozkaz.SVC,(byte)wartosc_SVC.V,
-     
-            };
+        {
+            (byte)rozkaz.MOV,(byte)wartosc_TYP.R1,(byte)wartosc_TYP.R2,  //Zapisuje do R1 adres pamięci(MEM) od której zaczyna się 5bajtów (rozmiar,adres,pading)
+            (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//Blokuje dostęp do listy
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.B, //Wywołuje XB
+            (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.V,
+            (byte)rozkaz.MOV, (byte)wartosc_TYP.R2, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.MEMORY,
+            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.WART_MEMORY,
+            (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R0,6,
+            (byte)rozkaz.SVC,(byte)wartosc_SVC.V,
+            (byte)rozkaz.INC,(byte)wartosc_TYP.R0,
+            (byte)rozkaz.JUMPV,(byte)wartosc_TYP.R0,6,//ma skoczyć do tyłu i znowu wykonać V na semaforze MEMORY
+            (byte)rozkaz.POWROT,
+ 
+        };
         public static void XB()
         {
             int r = Mem.MEMORY[(int)rejestry.r1];
             r = r << 8;
             r += Mem.MEMORY[(int)rejestry.r1 + 1];
-
+ 
             int a = Mem.MEMORY[(int)rejestry.r1 + 2];
             a = a << 8;
             a += Mem.MEMORY[(int)rejestry.r1 + 3];
-
-            int p = Mem.MEMORY[(int)rejestry.r1 + 4];
-
-            FSB fsb = new FSB(a + r + p + 1, 65536, 65536);
-
+ 
+ 
+            FSB fsb = new FSB(a + r + 1, 65536, 65536);
+ 
             if (FSB_LIST.Count == 1)
             {
                 FSB_LIST.Clear();
@@ -164,10 +208,10 @@ namespace Memory
                         FSB_LIST.RemoveAt(i);
                     }
                 }
-
-                fsb = new FSB(a + r + p + 1, tmp, tmp1);
+ 
+                fsb = new FSB(a + r + 1, tmp, tmp1);
                 FSB_LIST.Add(fsb);
-
+ 
                 for (int i = 0; i < FSB_LIST.Count; i++)
                 {
                     if (FSB_LIST[i].koniec == FSB_LIST[i + 1].pocz - 1)
@@ -176,44 +220,43 @@ namespace Memory
                         pocz = FSB_LIST[i].pocz;
                         konie = FSB_LIST[i + 1].koniec;
                         roz = FSB_LIST[i].wielkosc + FSB_LIST[i + 1].wielkosc;
-
+ 
                         FSB_LIST.RemoveAt(i);
                         FSB_LIST.RemoveAt(i + 1);
-
+ 
                         fsb = new FSB(pocz, konie, roz);
                         FSB_LIST.Add(fsb);
                     }
                 }
-
+ 
             }
             var sortedList = FSB_LIST.OrderBy(x => x.wielkosc).ToList();
             FSB_LIST = sortedList;
-
+ 
         }
-
-
-
+ 
+ 
         public static bool start(int i)
         {
-            FSB free = new FSB(i, 65535, 65536-i);
+            FSB free = new FSB(i, 65535, 65536 - i);
             FSB_LIST.Add(free);
             return true;
         }
     }
-
+ 
     public class FSB
     {
         public int pocz;
         public int koniec;
         public int wielkosc;
-
+ 
         public FSB(int p, int k, int w)
         {
             pocz = p;
             koniec = k;
             wielkosc = w;
         }
-
+ 
     }
 }
 
