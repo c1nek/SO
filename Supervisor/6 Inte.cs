@@ -12,11 +12,11 @@ namespace Interpreter
 {
     public static class Inter
     {
-        public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT, KONIEC };
+        public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT, KONIEC, JUMPV };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG};
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4 };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY};
         public enum Eprog : byte { IBSUP, IN, OUT=1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
 
 
@@ -2074,6 +2074,15 @@ namespace Interpreter
                 }
                 //skacze w tył
             }//JUMPR skok warunkowy lub nie w zależności od następnego parametru, do tyłu       (JUMPR,  R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <odległość>)
+            else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JUMPV)
+            {
+                if ((int)rejestry.r0 != 0)
+                {
+                    rejestry.lr++;
+                    rejestry.lr -= Mem.MEMORY[(int)rejestry.lr];
+                    rejestry.lr++;
+                }
+            }//JUMPV skok gdy r0!=0 do tyłu o daną wartość
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.METHOD)
             {
                 rejestry.lr++;
@@ -2226,15 +2235,15 @@ namespace Interpreter
                     rejestry.lr++;
                     if ((int)rejestry.r0 == 0)
                         rejestry.lr = LFlag[(int)Mem.MEMORY[rejestry.lr]];
-                    
-                        rejestry.lr++;
+
+                    rejestry.lr++;
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.PROG)
                 {
                     rejestry.lr++;
                     if ((int)rejestry.r0 == 0)
-                    rejestry.lr = IPLRTN.adrProg[(int)Mem.MEMORY[rejestry.lr]];
-                    
+                        rejestry.lr = IPLRTN.adrProg[(int)Mem.MEMORY[rejestry.lr]];
+
                     rejestry.lr++;
                 }
             }//JZ skok przy r0==0 do flagi działa                                               (JZ, WART|PROG, numer flagi lub nazwa programu)

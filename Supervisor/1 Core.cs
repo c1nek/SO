@@ -264,8 +264,8 @@ namespace Processor
 
     public class SEMAPHORE
     {
-        private int VALUE;
-        private List<PCB> semaphoreList = new List<PCB>();
+        public int VALUE;
+        public List<PCB> semaphoreList = new List<PCB>();
         public PCB FIRST_WAITER=null;
         public SEMAPHORE()
         {

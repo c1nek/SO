@@ -15,6 +15,7 @@ namespace Process
         {
 
         };
+
         public static int zaladujXC(int m)
         {
             int i;
