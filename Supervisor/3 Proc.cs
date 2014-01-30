@@ -15,13 +15,13 @@ namespace Process
           public static void XC()//utworzenie procesu
         {
             int i = 0;
-            UTF8Encoding gunwo = new UTF8Encoding();
+            UTF8Encoding kodowanie = new UTF8Encoding();
             byte[] c = new byte[8];
             for (; i < 8 && i != 0; i++)
             {
                 c[i] = Mem.MEMORY[((int)rejestry.r2) + i];
             }
-            string nazwa = gunwo.GetString(c, 0, i);
+            string nazwa = kodowanie.GetString(c, 0, i);
 
             PCB nowy = new PCB(nazwa);
             nowy.STOPPED = true;

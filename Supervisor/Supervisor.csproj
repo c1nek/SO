@@ -47,6 +47,7 @@
     <Compile Include="3 Proc.cs" />
     <Compile Include="5 SVC.cs" />
     <Compile Include="6 Inte.cs" />
+    <Compile Include="Format.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
