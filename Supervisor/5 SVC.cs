@@ -15,9 +15,9 @@ namespace Supervisor
     {
         public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT, KONIEC, JUMPV };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
-        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG};
+        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS };
         public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
@@ -61,8 +61,8 @@ namespace Supervisor
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                                               //zwiększenie wartości (adresu) w rejestrze 1 o jeden
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('N'),             //wpisanie znaku do komórki pamięci w rejestrze 1
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,       
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,0,8,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      8,                                                      //określenie długości komunikatu
+        /**/    (byte)rozkaz.ADD,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,5,
+        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,8,                                                      //określenie długości komunikatu
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('R'),             //zapisanie komunikatu
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
@@ -537,7 +537,12 @@ namespace Supervisor
 
    static public class IPLRTN
    {
-       public enum Eprog : byte { IBSUP, EXPUNGE, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER };
+       public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT, KONIEC, JUMPV };
+       public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
+       public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
+       public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
+       public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR };
+       public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
        public static int[] adrProg = new int[25];//adresy początku programów (SVC) nie wszystkie
 
        public static void CWrite(ConsoleColor color, string text)
@@ -670,12 +675,12 @@ namespace Supervisor
            ibsub2.cpu_stan[2] = 0;
            ibsub2.cpu_stan[3] = 0;
            ibsub2.cpu_stan[4] = adrProg[(int)Eprog.IBSUP];
-           ibsub1.cpu_stan[6] = 0;
-           ibsub1.cpu_stan[7] = 0;
-           ibsub1.cpu_stan[8] = 0;
-           ibsub1.cpu_stan[9] = 0;
-           ibsub1.cpu_stan[10] = 0;
-           ibsub1.cpu_stan[11] = 0;
+           ibsub2.cpu_stan[6] = 0;
+           ibsub2.cpu_stan[7] = 0;
+           ibsub2.cpu_stan[8] = 0;
+           ibsub2.cpu_stan[9] = 0;
+           ibsub2.cpu_stan[10] = 0;
+           ibsub2.cpu_stan[11] = 0;
 
            Console.Write("Ustawianie wskazników we wszystkich PCB");
            Console.ReadLine();

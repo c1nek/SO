@@ -15,15 +15,15 @@ namespace Interpreter
     {
         public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT, KONIEC, JUMPV };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
-        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG};
+        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS };
         public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
 
 
-        public static byte[] LFlag = new byte[100];//tablica adresów flag
+        //tablica adresów flag
 
-        private static Stack<int> stos = new Stack<int>();//stos wywołań programów
+        //zawiadowca.RUNNING.stos wywołań programów
 
         private static void CWrite(ConsoleColor color, string text)
         {
@@ -46,6 +46,12 @@ namespace Interpreter
 
             CWrite(ConsoleColor.Green, "Interpreter: ");
 
+            
+            
+            
+            
+            
+            
             
             
             if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.SVC)
@@ -78,7 +84,7 @@ namespace Interpreter
                     rejestry.lr++;
                     Console.WriteLine("SVC A");
                     rejestry.r0 = 1;
-                    stos.Push(rejestry.lr);
+                    zawiadowca.RUNNING.stos.Push(rejestry.lr);
                     rejestry.lr = IPLRTN.adrProg[(int)Eprog.A];
                 
                 }
@@ -87,14 +93,14 @@ namespace Interpreter
                     rejestry.lr++;
                     Console.WriteLine("SVC E");
                     rejestry.r0 = 0;
-                    stos.Push(rejestry.lr);
+                    zawiadowca.RUNNING.stos.Push(rejestry.lr);
                     rejestry.lr = IPLRTN.adrProg[(int)Eprog.A];
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.F)
                 {
                     rejestry.lr++;
                     Console.WriteLine("SVC F");
-                    stos.Push(rejestry.lr);
+                    zawiadowca.RUNNING.stos.Push(rejestry.lr);
                     rejestry.lr = IPLRTN.adrProg[(int)Eprog.F];
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.B)
@@ -114,7 +120,7 @@ namespace Interpreter
                 {
                     rejestry.lr++;
                     Console.WriteLine("SVC D");
-                    stos.Push(rejestry.lr);
+                    zawiadowca.RUNNING.stos.Push(rejestry.lr);
                     rejestry.lr = IPLRTN.adrProg[(int)Eprog.D];
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.H)
@@ -133,18 +139,19 @@ namespace Interpreter
                 {
                     //wywołaj metode N klasy Proc
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.R)
+                else 
+                    if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.R)
                 {
                     rejestry.lr++;
                     Console.WriteLine("SVC R");
-                    stos.Push(rejestry.lr);
+                    zawiadowca.RUNNING.stos.Push(rejestry.lr);
                     rejestry.lr = IPLRTN.adrProg[(int)Eprog.R];
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.S)
                 {
                     rejestry.lr++;
                     Console.WriteLine("SVC S");
-                    stos.Push(rejestry.lr);
+                    zawiadowca.RUNNING.stos.Push(rejestry.lr);
                     rejestry.lr = IPLRTN.adrProg[(int)Eprog.S];
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.Y)
@@ -176,9 +183,10 @@ namespace Interpreter
                 {
                     //wywołaj metode Q klasy Proc
                 }
-            }//SVC do dokończenia (brak wywołań) dodanie do stosu licznika rozkazów
+            }//SVC do dokończenia (brak wywołań) dodanie do zawiadowca.RUNNING.stosu licznika rozkazów
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.MOV)
             {
+                Console.WriteLine("MOV");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)
                 {
@@ -1267,6 +1275,7 @@ namespace Interpreter
             }//MOV kopiuje wartość z wybranego miejsca do innego                                (MOV, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|SEM, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART|***, *** wyjaśnienie wyżej)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.ADD)
             {
+                Console.WriteLine("ADD");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//ADD WART 
                 {
@@ -1366,6 +1375,7 @@ namespace Interpreter
             }//ADD dodawanie do akumulatora,                                                    (ADD, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <wartosc jeżeli wcześniej WART>)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.SUB)
             {
+                Console.WriteLine("SUB");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//SUB WART 
                 {
@@ -1560,6 +1570,7 @@ namespace Interpreter
             }//MUL mnożenie akumulatora,                                                        (MUL, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <wartosc jeżeli wcześniej WART>)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.DIV)
             {
+                Console.WriteLine("DIV");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)//DIV WART 
                 {
@@ -1657,6 +1668,7 @@ namespace Interpreter
             }//DIV dzielenie akumulatora, bez reszty,                                           (DIV, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <wartosc jeżeli wcześniej WART>)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.INC)
             {
+                Console.WriteLine("INC");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//zwiększa akumulator o 1
                 {
@@ -1745,6 +1757,7 @@ namespace Interpreter
             }//INC inkrementacja,                                                               (INC, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.DEC)
             {
+                Console.WriteLine("DEC");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R0)//zmniejsza akumulator o 1
                 {
@@ -1776,6 +1789,7 @@ namespace Interpreter
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.LR)//zmniejsza rejestr lr o 1
                 {
+
                     rejestry.lr++;
                     int temp = (int)rejestry.lr;
                     temp--;
@@ -1833,6 +1847,7 @@ namespace Interpreter
             }//DEC dekrementacja,                                                               (DEC, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART) 
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JUMPF)
             {
+                Console.WriteLine("JUMPF");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
                 {
@@ -1976,6 +1991,7 @@ namespace Interpreter
             }//JUMPF skok warunkowy lub nie w zależności od następnego parametru, do przodu     (JUMPF, R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <odległość>
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JUMPR)
             {
+                Console.WriteLine("JUMPR");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
                 {
@@ -2119,6 +2135,7 @@ namespace Interpreter
             }//JUMPR skok warunkowy lub nie w zależności od następnego parametru, do tyłu       (JUMPR,  R0|R1|R2|R3|R4|R5|R6|R7|R8|R9|LR|MEM|WART, <odległość>)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JUMPV)
             {
+                Console.WriteLine("JUMPV");
                 if ((int)rejestry.r0 != 0)
                 {
                     rejestry.lr++;
@@ -2128,6 +2145,7 @@ namespace Interpreter
             }//JUMPV skok gdy r0!=0 do tyłu o daną wartość
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.METHOD)
             {
+                Console.WriteLine("METHOD");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.CZYSC_PODR)
                 {
@@ -2294,30 +2312,37 @@ namespace Interpreter
                     rejestry.lr++;
                     Proc.XDM();
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.XD)
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.XR)
                 {
                     rejestry.lr++;
                     Proc.XRM();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.XS)
+                {
+                    rejestry.lr++;
+                    Proc.XSM();
                 }
 
                 //dokończyć
             }//METHOD możliwe rozszerzenia                                                      (METHOD, <nazwa metody>, <opcjonalnie parametry>)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.FLAG)
             {
+                Console.WriteLine("FLAG");
                 rejestry.lr++;
                 int tmp = Mem.MEMORY[rejestry.lr];
                 rejestry.lr++;
-                LFlag[tmp] = (byte)rejestry.lr;
+                zawiadowca.RUNNING.LFlag[tmp] = (int)rejestry.lr;
 
             }//FLAG dodanie flagi (zapamiętanie licznika rozkazów)                              (FLAG , <nr flagi>)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JZ)
             {
+                Console.WriteLine("JZ");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
                 {
                     rejestry.lr++;
                     if ((int)rejestry.r0 == 0)
-                        rejestry.lr = LFlag[(int)Mem.MEMORY[rejestry.lr]];
+                        rejestry.lr = zawiadowca.RUNNING.LFlag[(int)Mem.MEMORY[rejestry.lr]];
 
                     rejestry.lr++;
                 }
@@ -2332,11 +2357,12 @@ namespace Interpreter
             }//JZ skok przy r0==0 do flagi działa                                               (JZ, WART|PROG, numer flagi lub nazwa programu)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JMP)
             {
+                Console.WriteLine("JMP");
                 rejestry.lr++;
                 if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.WART)
                 {
                     rejestry.lr++;
-                    rejestry.lr = LFlag[(int)Mem.MEMORY[rejestry.lr]];
+                    rejestry.lr = zawiadowca.RUNNING.LFlag[(int)Mem.MEMORY[rejestry.lr]];
                     rejestry.lr++;
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.PROG)
@@ -2348,10 +2374,11 @@ namespace Interpreter
             }//JMP skok bezwarunkowy do flagi                                                   (JMP, WART|PROG, numer flagi lub nazwa programu)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.POWROT)
             {
-                int tmp = stos.Pop();
+                Console.WriteLine("POWROT");
+                int tmp = zawiadowca.RUNNING.stos.Pop();
                 rejestry.lr = tmp;
-                //odczytanie ze stosu licznika rozkazów i go ustawienie
-            }//POWROT wczytuje licznik rozkazów ze stosu
+                //odczytanie ze zawiadowca.RUNNING.stosu licznika rozkazów i go ustawienie
+            }//POWROT wczytuje licznik rozkazów ze zawiadowca.RUNNING.stosu
             
 
         }

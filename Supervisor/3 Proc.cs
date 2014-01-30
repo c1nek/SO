@@ -276,7 +276,7 @@ namespace Process
                 c[i] = Mem.MEMORY[((int)rejestry.r2) + i];
             }
             string nazwa = kodowanie.GetString(c, 0, i);
-            Console.WriteLine("Usuwanie procesu {0}", nazwa);
+            Console.WriteLine("Uruchamianie procesu {0}", nazwa);
             PCB wlacz = XN(nazwa);
             wlacz.cpu_stan_zapisz();
             wlacz.cpu_stan[4] = adr;

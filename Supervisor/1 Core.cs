@@ -35,7 +35,7 @@ namespace Processor
                 
                 
                 
-                if (licznik==50|| wymusZmiane)
+                if (/*licznik==50|| */wymusZmiane)
                 {
                     wymusZmiane = false;
                     NEXTTRY_MODIFIED = false;
@@ -43,25 +43,21 @@ namespace Processor
                     RUNNING.cpu_stan_zapisz();
                     while (i)
                     {
-                        if (!NEXTTRY.BLOCKED)
+                        if (!NEXTTRY.BLOCKED && !NEXTTRY.STOPPED)
                         {
-                            if (!NEXTTRY.STOPPED)
-                            {
-                                RUNNING = NEXTTRY;
-                                NEXTTRY = RUNNING.NEXT_PCB_ALL;
-                                RUNNING.cpu_stan_laduj();
-                                i = false;
-                                licznik = 0;
-                            }
-                            else
-                            {
-                                NEXTTRY =NEXTTRY.NEXT_PCB_ALL;
-                            }
+
+                            RUNNING = NEXTTRY;
+                            NEXTTRY = RUNNING.NEXT_PCB_ALL;
+                            RUNNING.cpu_stan_laduj();
+                            i = false;
+                            licznik = 0;
+
                         }
                         else
                         {
                             NEXTTRY = NEXTTRY.NEXT_PCB_ALL;
                         }
+                        
                     }
                 }
                 Inter.Run();
@@ -88,7 +84,9 @@ namespace Processor
         public SEMAPHORE MESSAGE_SEMAPHORE_RECEIVER;
         public PCB NEXT_SEMAPHORE_WAITER;
         public MESSAGE FIRST_MESSAGE;
+        public Stack<int> stos = new Stack<int>();
         public object[] cpu_stan = new object[12];
+        public int[] LFlag = new int[100];
 
         public void cpu_stan_zapisz()
         {
