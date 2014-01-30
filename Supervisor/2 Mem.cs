@@ -23,8 +23,8 @@ namespace Memory
 
 
         public static List<FSB> FSB_LIST = new List<FSB>();
-        public static SEMAPHORE MEMORY_SEM = new SEMAPHORE();//semafor z domyslna wartoscia 0
-        public static SEMAPHORE FSBSEM = new SEMAPHORE(1);//semafor wyłączności dostępu do listy bloków FSB
+        public static SEMAPHORE MEMORY_SEM = new SEMAPHORE("MEMORY_SEM");//semafor z domyslna wartoscia 0
+        public static SEMAPHORE FSBSEM = new SEMAPHORE(1,"FSBSEM");//semafor wyłączności dostępu do listy bloków FSB
         public static byte[] MEMORY = new byte[65536];
         public static object r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, lr;
         public static int podreczna;
@@ -76,6 +76,8 @@ namespace Memory
             {
 
                 rejestry.r3 = best;
+                zawiadowca.RUNNING.ADR_PODR = best;
+                zawiadowca.RUNNING.PAM_PODR = true;
                 rejestry.r0 = 0;
                 Console.WriteLine("Znaleziono odpowiadający wolny blok FSB dla pamięci podręcznej");
 

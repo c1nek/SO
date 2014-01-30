@@ -128,8 +128,8 @@ namespace Processor
             LAST_PCB_ALL = null;
             NEXT_PCB_GROUP = null;
             LAST_PCB_GROUP = null;
-            MESSAGE_SEMAPHORE_COMMON=new SEMAPHORE(1);
-            MESSAGE_SEMAPHORE_RECEIVER=new SEMAPHORE(1);
+            MESSAGE_SEMAPHORE_COMMON=new SEMAPHORE(1,"COMMON");
+            MESSAGE_SEMAPHORE_RECEIVER=new SEMAPHORE(1,"RECEIVER");
             PAM_PODR = false;
             ADR_PODR = 0;
         }
@@ -156,24 +156,29 @@ namespace Processor
     }
 
 
+
+
     public class SEMAPHORE
     {
         public int VALUE;
         public string NAME;
         public List<PCB> semaphoreList = new List<PCB>();
-        public PCB FIRST_WAITER=null;
-        public SEMAPHORE()
+        public PCB FIRST_WAITER = null;
+        public SEMAPHORE(string name)
         {
             VALUE = 0;
+            NAME = name;
         }
-        public SEMAPHORE(int i)
+        public SEMAPHORE(int i, string name)
         {
             VALUE = i;
+            NAME = name;
         }
 
         public static void P()//jeżeli semafor bedzie niedodatni to wtedy następuje blokowanie procesu który jest w RUNNING
         {
-            SEMAPHORE S = (SEMAPHORE) rejestry.r2;
+            Console.WriteLine("Wykonano operacje P na semaforze " + ((SEMAPHORE)rejestry.r2).NAME);
+            SEMAPHORE S = (SEMAPHORE)rejestry.r2;
             S.VALUE--;
             if (S.VALUE < 0)
             {
@@ -198,6 +203,7 @@ namespace Processor
 
         public static void V()
         {
+            Console.WriteLine("Wykonano operacje V na semaforze " + ((SEMAPHORE)rejestry.r2).NAME);
             SEMAPHORE S = (SEMAPHORE)rejestry.r2;
             S.VALUE++;
             if (S.VALUE <= 0)
@@ -208,7 +214,7 @@ namespace Processor
                     zawiadowca.NEXTTRY = S.FIRST_WAITER;
                     zawiadowca.NEXTTRY_MODIFIED = true;
                 }
-                S.FIRST_WAITER=S.FIRST_WAITER.NEXT_SEMAPHORE_WAITER;
+                S.FIRST_WAITER = S.FIRST_WAITER.NEXT_SEMAPHORE_WAITER;
                 S.semaphoreList[0].NEXT_SEMAPHORE_WAITER = null;
                 S.semaphoreList.RemoveAt(0);
                 return;
@@ -217,6 +223,8 @@ namespace Processor
             return;
         }
     }
+
+
 }
 
 

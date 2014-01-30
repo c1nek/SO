@@ -175,13 +175,13 @@ namespace Process
             pomoc2_lancuch.LAST_PCB_ALL = ostatni_lancuch;
         }
 
-        public static void XJ() //usuniecie bloku
+        public static void XJ(PCB x) //usuniecie bloku
         {
             //usuniecie z grupy
             PCB pomoc1_grupa = zawiadowca.RUNNING;
             PCB pomoc2_grupa = pomoc1_grupa.NEXT_PCB_GROUP;
             PCB pomoc3_grupa = pomoc2_grupa.NEXT_PCB_GROUP;
-            PCB rejestr = (PCB)rejestry.r2;
+            PCB rejestr = x;
 
         start:
             if (pomoc2_grupa == rejestr)

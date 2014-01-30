@@ -58,7 +58,7 @@ namespace Supervisor
             else if (rejestry.r0 is PCB)
                 CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r0).NAME);
             else if (rejestry.r0 is SEMAPHORE)
-                CWrite(ConsoleColor.Magenta, "SEMAPHORE");
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r0).NAME);
             else
                 CWrite(ConsoleColor.Magenta, "inne");
             Console.CursorLeft = 80;
@@ -69,7 +69,7 @@ namespace Supervisor
             else if (rejestry.r1 is PCB)
                 CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r1).NAME);
             else if (rejestry.r1 is SEMAPHORE)
-                CWrite(ConsoleColor.Magenta, "SEMAPHORE");
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r1).NAME);
             else
                 CWrite(ConsoleColor.Magenta, "inne");
             Console.CursorLeft = 80;
@@ -80,7 +80,7 @@ namespace Supervisor
             else if (rejestry.r2 is PCB)
                 CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r2).NAME);
             else if (rejestry.r2 is SEMAPHORE)
-                CWrite(ConsoleColor.Magenta, "SEMAPHORE");
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r2).NAME);
             else
                 CWrite(ConsoleColor.Magenta, "inne");
             Console.CursorLeft = 80;
@@ -91,7 +91,7 @@ namespace Supervisor
             else if (rejestry.r3 is PCB)
                 CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r3).NAME);
             else if (rejestry.r3 is SEMAPHORE)
-                CWrite(ConsoleColor.Magenta, "SEMAPHORE");
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r3).NAME);
             else
                 CWrite(ConsoleColor.Magenta, "inne");
             Console.CursorLeft = 80;
@@ -102,7 +102,7 @@ namespace Supervisor
             else if (rejestry.r4 is PCB)
                 CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r4).NAME);
             else if (rejestry.r4 is SEMAPHORE)
-                CWrite(ConsoleColor.Magenta, "SEMAPHORE");
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r4).NAME);
             else
                 CWrite(ConsoleColor.Magenta, "inne");
             Console.CursorLeft = 80;
@@ -113,7 +113,7 @@ namespace Supervisor
             else if (rejestry.r5 is PCB)
                 CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r5).NAME);
             else if (rejestry.r5 is SEMAPHORE)
-                CWrite(ConsoleColor.Magenta, "SEMAPHORE");
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r5).NAME);
             else
                 CWrite(ConsoleColor.Magenta, "inne");
             Console.CursorLeft = 80;
@@ -124,7 +124,7 @@ namespace Supervisor
             else if (rejestry.r6 is PCB)
                 CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r6).NAME);
             else if (rejestry.r6 is SEMAPHORE)
-                CWrite(ConsoleColor.Magenta, "SEMAPHORE");
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r6).NAME);
             else
                 CWrite(ConsoleColor.Magenta, "inne");
             Console.CursorLeft = 80;
@@ -135,7 +135,7 @@ namespace Supervisor
             else if (rejestry.r7 is PCB)
                 CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r7).NAME);
             else if (rejestry.r7 is SEMAPHORE)
-                CWrite(ConsoleColor.Magenta, "SEMAPHORE");
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r7).NAME);
             else
                 CWrite(ConsoleColor.Magenta, "inne");
             Console.CursorLeft = 80;
@@ -146,7 +146,7 @@ namespace Supervisor
             else if (rejestry.r8 is PCB)
                 CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r8).NAME);
             else if (rejestry.r8 is SEMAPHORE)
-                CWrite(ConsoleColor.Magenta, "SEMAPHORE");
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r8).NAME);
             else
                 CWrite(ConsoleColor.Magenta, "inne");
             Console.CursorLeft = 80;
@@ -157,7 +157,7 @@ namespace Supervisor
             else if (rejestry.r9 is PCB)
                 CWrite(ConsoleColor.Magenta, ((PCB)rejestry.r9).NAME);
             else if (rejestry.r9 is SEMAPHORE)
-                CWrite(ConsoleColor.Magenta, "SEMAPHORE");
+                CWrite(ConsoleColor.Magenta, ((SEMAPHORE)rejestry.r9).NAME);
             else
                 CWrite(ConsoleColor.Magenta, "inne");
             Console.CursorLeft = 80;
