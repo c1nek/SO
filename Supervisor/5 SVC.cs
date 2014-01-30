@@ -61,7 +61,11 @@ namespace Supervisor
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                                               //zwiększenie wartości (adresu) w rejestrze 1 o jeden
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('N'),             //wpisanie znaku do komórki pamięci w rejestrze 1
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,       
-        /**/    (byte)rozkaz.ADD,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.WART,5,
+       /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1, 
+       /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1, 
+       /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1, 
+       /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1, 
+       /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1, 
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,8,                                                      //określenie długości komunikatu
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('R'),             //zapisanie komunikatu
@@ -73,8 +77,6 @@ namespace Supervisor
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('D'),
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,0,//
-        /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
-        /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,0,
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,0,
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,
@@ -341,7 +343,7 @@ namespace Supervisor
 
         public static void SCAN()//zapamiętuje wielkość w rejestrze 5, wskaźnik na nazwę IN w rejestrze 6, wskaźnik na nazwę OUT w rejestrze 7
         {
-            int adrPoczatek = (int) rejestry.r4+2;
+            int adrPoczatek = (int) rejestry.r4;
             int tmp = adrPoczatek;
             int tmp2;
             string tekst;
@@ -594,6 +596,12 @@ namespace Supervisor
            Console.Write(" - wczytano");
            Console.ReadLine();
 
+           
+           
+           
+           
+           
+           
            adrProg[(int)Eprog.IN] = i;
            i = Ext.zaladuj(i);
            CWrite(ConsoleColor.Cyan, "EXT ");

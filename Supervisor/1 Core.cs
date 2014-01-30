@@ -35,22 +35,37 @@ namespace Processor
                 
                 
                 
-                if (/*licznik==50|| */wymusZmiane)
+                
+                
+                
+                
+                
+                
+                if (licznik==50||wymusZmiane==true)
                 {
+                    
                     wymusZmiane = false;
                     NEXTTRY_MODIFIED = false;
                     bool i = true;
                     RUNNING.cpu_stan_zapisz();
-                    while (i)
-                    {
+                    Console.Clear();
+                    while (i)              
+                    
+                                      
+                    
+                   {
                         if (!NEXTTRY.BLOCKED && !NEXTTRY.STOPPED)
                         {
 
+                            
+                            
                             RUNNING = NEXTTRY;
                             NEXTTRY = RUNNING.NEXT_PCB_ALL;
+                            
                             RUNNING.cpu_stan_laduj();
                             i = false;
                             licznik = 0;
+                            Console.WriteLine("Uruchomiony proces {0}", RUNNING.NAME);
 
                         }
                         else
@@ -87,9 +102,22 @@ namespace Processor
         public Stack<int> stos = new Stack<int>();
         public object[] cpu_stan = new object[12];
         public int[] LFlag = new int[100];
-
+        public bool przywroc_z;
+        public  object zap2_Z;
+        public object zap_Z;
+        public bool przywroc1_z;
+        public object zap3_z ;
+        public int licz_z ;
+        public PCB odb_z;
         public void cpu_stan_zapisz()
         {
+            zap_Z = Proc.zap;
+            zap2_Z = Proc.zap2;
+            przywroc_z = Proc.przywroc;
+            przywroc1_z = Proc.przywroc1;
+            zap3_z = Proc.zap3;
+            licz_z = Proc.licz;
+            odb_z = Proc.odb;
             cpu_stan[0] = rejestry.r0;
             cpu_stan[1] = rejestry.r1;
             cpu_stan[2] = rejestry.r2;
@@ -107,6 +135,13 @@ namespace Processor
 
         public void cpu_stan_laduj()
         {
+            Proc.zap=zap_Z;
+            Proc.zap2=zap2_Z ;
+            Proc.przywroc=przywroc_z;
+            Proc.przywroc1=przywroc1_z;
+             Proc.zap3=zap3_z ;
+             Proc.licz=licz_z ;
+             Proc.odb =odb_z;
             rejestry.r0 = cpu_stan[0];
             rejestry.r1 = cpu_stan[1];
             rejestry.r2 = cpu_stan[2];
@@ -123,7 +158,13 @@ namespace Processor
 
         public PCB(string name)
         {
-            
+            zap_Z = null;
+            zap2_Z = null;
+            przywroc_z = false;
+            przywroc1_z = false;
+            odb_z = null;
+            zap3_z = null;
+            licz_z = 0;
             NAME = name;
             BLOCKED = false;
             STOPPED = false;
@@ -132,7 +173,7 @@ namespace Processor
             NEXT_PCB_GROUP = null;
             LAST_PCB_GROUP = null;
             MESSAGE_SEMAPHORE_COMMON=new SEMAPHORE(1,"COMMON");
-            MESSAGE_SEMAPHORE_RECEIVER=new SEMAPHORE(1,"RECEIVER");
+            MESSAGE_SEMAPHORE_RECEIVER=new SEMAPHORE(0,"RECEIVER");
             PAM_PODR = false;
             ADR_PODR = 0;
         }

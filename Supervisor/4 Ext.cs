@@ -36,7 +36,7 @@ namespace External
                         (byte)rozkaz.SVC,       (byte)wartosc_SVC.E,
      
                         //zapisywanie grupy procesów
-                        (byte)wartosc_METHOD.GRUPA,
+                        (byte)rozkaz.METHOD, (byte)wartosc_METHOD.GRUPA,
            
      
                         //ustawienie flagi
@@ -45,7 +45,7 @@ namespace External
                         //pobranie komunikatu
                         (byte)rozkaz.SVC,       (byte)wartosc_SVC.R,
      
-                        (byte)wartosc_METHOD.SPRAWDZENIE,
+                        (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.SPRAWDZENIE,
      
                         //wysłanie komunikatu
                         (byte)rozkaz.SVC,       (byte)wartosc_SVC.S,
@@ -309,14 +309,14 @@ namespace External
 
             }
 
+        
         }
 
 
 
         public static void SPRAWDZENIE()
         {
-
-            int pocz = Mem.MEMORY[(int)wartosc_TYP.R2 + 9];
+            int pocz = (int)rejestry.r2 + 9;
             string c = null;
             UTF8Encoding kodowanie = new UTF8Encoding();
             c = kodowanie.GetString(Mem.MEMORY, pocz, 4);

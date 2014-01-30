@@ -17,17 +17,17 @@ namespace Memory
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF };
         public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
 
 
 
         public static List<FSB> FSB_LIST = new List<FSB>();
         public static SEMAPHORE MEMORY_SEM = new SEMAPHORE("MEMORY_SEM");//semafor z domyslna wartoscia 0
-        public static SEMAPHORE FSBSEM = new SEMAPHORE(1,"FSBSEM");//semafor wyłączności dostępu do listy bloków FSB
+        public static SEMAPHORE FSBSEM = new SEMAPHORE(1, "FSBSEM");//semafor wyłączności dostępu do listy bloków FSB
         public static byte[] MEMORY = new byte[65536];
         public static object r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, lr;
-        public static int podreczna;
+        public static int podreczna, usuwanie;
 
         public static int zaladujXA(int m)
         {
@@ -57,7 +57,7 @@ namespace Memory
             int temp1 = 256;
             if (temp1 > 65536)
             {
-                Console.WriteLine("Rozmiar pamięci mniejszy od rozmiaru procesu!");
+                Console.Write("Rozmiar pamięci mniejszy od rozmiaru procesu!!!");
 
             }
             else
@@ -79,7 +79,7 @@ namespace Memory
                 zawiadowca.RUNNING.ADR_PODR = best;
                 zawiadowca.RUNNING.PAM_PODR = true;
                 rejestry.r0 = 0;
-                Console.WriteLine("Znaleziono odpowiadający wolny blok FSB dla pamięci podręcznej.");
+                Console.WriteLine("Znaleziono odpowiadający wolny blok FSB dla pamięci podręcznej");
 
 
             }
@@ -87,13 +87,12 @@ namespace Memory
             {
                 best = 1;
                 rejestry.r0 = best;
-                Console.WriteLine("Nie znaleziono odpowiadającego wolnego bloku FSB dla pamięci podręcznej.");
+                Console.WriteLine("Nie znaleziono odpowiadającego wolnego bloku FSB dla pamięci podręcznej");
             }
         }
 
         public static void PRZESZUKAJ_LISTE()
         {
-            Console.WriteLine("Przeszukiwanie listy pamięci.");
             int best = -1;
             int temp = 65536;
 
@@ -103,7 +102,7 @@ namespace Memory
 
             if (temp1 > 65536)
             {
-                Console.WriteLine("Rozmiar pamięci mniejszy od rozmiaru procesu!");
+                Console.WriteLine("Rozmiar pamięci mniejszy od rozmiaru procesu!!!");
 
             }
             else
@@ -192,63 +191,64 @@ namespace Memory
 
         public static void XFW()
         {
+            usuwanie = 1;
             Console.Write("Start programu"); Format.CWrite(ConsoleColor.Cyan, " XF");
             Console.WriteLine("");
             Console.Write("Stan rejestrów zapisany\n");
         }
         public static byte[] XA = new byte[]
-            {
-               
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.POCZATEK_MEM,
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XA,
-                (byte)rozkaz.MOV,(byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//Blokuje dostęp do listy
-                (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R0,28,//Skok w przypadku gdy chodzi tylko o pamięć podręczną
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.PRZESZUKAJ_LISTE,//Przeszukuje liste funkcja w C#
-                (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R0,13,//Jak znalazło wolne bloki to skacze do XB, jak nie znalazło leci dalej
-                (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
-                (byte)rozkaz.MOV,(byte)wartosc_TYP.SEM, (byte)wartosc_SEM.MEMORY,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//dodanie procesu do oczekujacych, semafor MEMORY
-                (byte)rozkaz.JUMPF,(byte)wartosc_TYP.WART,35,//Jeżeli zrobiło P na semaforze MEMORY to skacze do POWROT
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.B, //Wywołuje XB
-                (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
-                (byte)rozkaz.JUMPF,(byte)wartosc_TYP.WART,25,//Skok do POWROT jeżeli normalnie przydzielono blok
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.PODRECZNA,
-                (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R0,13,//Jak znalazło wolne bloki to skacze do XB, jak nie znalazło leci dalej
-                (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
-                (byte)rozkaz.MOV,(byte)wartosc_TYP.SEM, (byte)wartosc_SEM.MEMORY,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//dodanie procesu do oczekujacych, semafor MEMORY
-                (byte)rozkaz.JUMPF,(byte)wartosc_TYP.WART,7,//Jeżeli zrobiło P na semaforze MEMORY to skacze do POWROT
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.B,
-                (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.KONIEC_MEM,
-                (byte)rozkaz.POWROT,
-     
-            };
+                {
+                   
+                    (byte)rozkaz.METHOD,(byte)wartosc_METHOD.POCZATEK_MEM,
+                    (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XA,
+                    (byte)rozkaz.MOV,(byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//Blokuje dostęp do listy
+                    (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R0,28,//Skok w przypadku gdy chodzi tylko o pamięć podręczną
+                    (byte)rozkaz.METHOD,(byte)wartosc_METHOD.PRZESZUKAJ_LISTE,//Przeszukuje liste funkcja w C#
+                    (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R0,13,//Jak znalazło wolne bloki to skacze do XB, jak nie znalazło leci dalej
+                    (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
+                    (byte)rozkaz.MOV,(byte)wartosc_TYP.SEM, (byte)wartosc_SEM.MEMORY,
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//dodanie procesu do oczekujacych, semafor MEMORY
+                    (byte)rozkaz.JUMPF,(byte)wartosc_TYP.WART,35,//Jeżeli zrobiło P na semaforze MEMORY to skacze do POWROT
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.B, //Wywołuje XB
+                    (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
+                    (byte)rozkaz.JUMPF,(byte)wartosc_TYP.WART,25,//Skok do POWROT jeżeli normalnie przydzielono blok
+                    (byte)rozkaz.METHOD,(byte)wartosc_METHOD.PODRECZNA,
+                    (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R0,13,//Jak znalazło wolne bloki to skacze do XB, jak nie znalazło leci dalej
+                    (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
+                    (byte)rozkaz.MOV,(byte)wartosc_TYP.SEM, (byte)wartosc_SEM.MEMORY,
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//dodanie procesu do oczekujacych, semafor MEMORY
+                    (byte)rozkaz.JUMPF,(byte)wartosc_TYP.WART,7,//Jeżeli zrobiło P na semaforze MEMORY to skacze do POWROT
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.B,
+                    (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.V,//Odblokowuje semafor FSBSEM
+                    (byte)rozkaz.METHOD,(byte)wartosc_METHOD.KONIEC_MEM,
+                    (byte)rozkaz.POWROT,
+         
+                };
 
         public static byte[] XF = new byte[]
-            {
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.POCZATEK_MEM,
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XF,
-                (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//Blokuje dostęp do listy
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.B, //Wywołuje XB
-                (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.V,
-                (byte)rozkaz.MOV,(byte)wartosc_TYP.SEM, (byte)wartosc_SEM.MEMORY,
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.WART_MEMORY,
-                (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R0,7,
-                (byte)rozkaz.SVC,(byte)wartosc_SVC.V,
-                (byte)rozkaz.INC,(byte)wartosc_TYP.R0,
-                (byte)rozkaz.JUMPV,(byte)wartosc_TYP.R0,7,//ma skoczyć do tyłu i znowu wykonać V na semaforze MEMORY
-                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.KONIEC_MEM,
-                (byte)rozkaz.POWROT,
-     
-            };
+                {
+                    (byte)rozkaz.METHOD,(byte)wartosc_METHOD.POCZATEK_MEM,
+                    (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XF,
+                    (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//Blokuje dostęp do listy
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.B, //Wywołuje XB
+                    (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.V,
+                    (byte)rozkaz.MOV,(byte)wartosc_TYP.SEM, (byte)wartosc_SEM.MEMORY,
+                    (byte)rozkaz.METHOD,(byte)wartosc_METHOD.WART_MEMORY,
+                    (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R0,7,
+                    (byte)rozkaz.SVC,(byte)wartosc_SVC.V,
+                    (byte)rozkaz.INC,(byte)wartosc_TYP.R0,
+                    (byte)rozkaz.JUMPV,(byte)wartosc_TYP.R0,7,//ma skoczyć do tyłu i znowu wykonać V na semaforze MEMORY
+                    (byte)rozkaz.METHOD,(byte)wartosc_METHOD.KONIEC_MEM,
+                    (byte)rozkaz.POWROT,
+         
+                };
         public static void XB()
         {
             Console.Write("Start programu"); Format.CWrite(ConsoleColor.Cyan, " XB");
@@ -265,7 +265,17 @@ namespace Memory
             if (podreczna == 1)
                 r = 256;
 
-            int a = (int)rejestry.r3;
+
+            int a;
+            if (usuwanie == 1)
+            {
+                a = Mem.MEMORY[(int)rejestry.r2 + 2];
+                a = a << 8;
+                a += Mem.MEMORY[(int)rejestry.r2 + 3];
+                usuwanie = 0;
+            }
+            else
+                a = (int)rejestry.r3;
 
 
             FSB fsb = new FSB(a + r, 65535, 65535 - (a + r - 1));
@@ -275,6 +285,7 @@ namespace Memory
                 FSB_LIST.Clear();
                 FSB_LIST.Add(fsb);
                 Console.WriteLine("Dołączono nowy blok do listy bloków FSB, adres: " + (a + r) + "-" + 65535 + ", rozmiar: " + (65535 - (a + r - 1)));
+                Console.WriteLine("");
             }
             else
             {
@@ -297,6 +308,7 @@ namespace Memory
                     fsb = new FSB(a + r, tmp, tmp - (a + r - 1));
                     FSB_LIST.Add(fsb);
                     Console.WriteLine("Dołączono nowy blok do listy bloków FSB, adres: " + (a + r) + "-" + tmp + ", rozmiar: " + (tmp - (a + r - 1)));
+                    Console.WriteLine("");
                 }
 
                 if (tmp1 == 0)
@@ -316,6 +328,7 @@ namespace Memory
                             fsb = new FSB(pocz, konie, roz);
                             FSB_LIST.Add(fsb);
                             Console.WriteLine("Dołączono nowy blok do listy bloków FSB, adres: " + pocz + "-" + konie + ", rozmiar: " + roz);
+                            Console.WriteLine("");
                         }
                     }
 

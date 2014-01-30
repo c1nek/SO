@@ -111,6 +111,7 @@ namespace Interpreter
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.C)
                 {
+                    
                     rejestry.lr++;
                     Console.WriteLine("SVC C");
                     Proc.XC();
@@ -162,13 +163,19 @@ namespace Interpreter
                         rejestry.lr++;
                         if (Mem.MEMORY[(int)rejestry.lr] == (byte)Eprog.IN)
                         {
+                            rejestry.lr++;
                             Proc.XY(IPLRTN.adrProg[(int)Eprog.IN]);
                         }
                         else if (Mem.MEMORY[(int)rejestry.lr] == (byte)Eprog.OUT)
+                        {
+                            rejestry.lr++;
                             Proc.XY(IPLRTN.adrProg[(int)Eprog.OUT]);
+                        }
                     }
                     else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
                     {
+                        rejestry.lr++;
+
                         Proc.XY((int)rejestry.r8);
                     }
                     //wywołaj metode Y klasy Proc (SVC, Y, REJESTR|PROG, Eprog)
@@ -2199,6 +2206,7 @@ namespace Interpreter
                     }
                     else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R2)
                     {
+                        
                         adr = (int)rejestry.r2;
                     }
 
@@ -2344,7 +2352,7 @@ namespace Interpreter
                     if ((int)rejestry.r0 == 0)
                         rejestry.lr = zawiadowca.RUNNING.LFlag[(int)Mem.MEMORY[rejestry.lr]];
 
-                    rejestry.lr++;
+                    
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.PROG)
                 {
@@ -2352,7 +2360,7 @@ namespace Interpreter
                     if ((int)rejestry.r0 == 0)
                         rejestry.lr = IPLRTN.adrProg[(int)Mem.MEMORY[rejestry.lr]];
 
-                    rejestry.lr++;
+                    
                 }
             }//JZ skok przy r0==0 do flagi działa                                               (JZ, WART|PROG, numer flagi lub nazwa programu)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.JMP)
@@ -2363,13 +2371,13 @@ namespace Interpreter
                 {
                     rejestry.lr++;
                     rejestry.lr = zawiadowca.RUNNING.LFlag[(int)Mem.MEMORY[rejestry.lr]];
-                    rejestry.lr++;
+                    
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.PROG)
                 {
                     rejestry.lr++;
                     rejestry.lr = IPLRTN.adrProg[(int)Mem.MEMORY[rejestry.lr]];
-                    rejestry.lr++;
+                    
                 }
             }//JMP skok bezwarunkowy do flagi                                                   (JMP, WART|PROG, numer flagi lub nazwa programu)
             else if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.POWROT)
