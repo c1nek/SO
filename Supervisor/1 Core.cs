@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -95,7 +95,7 @@ namespace Processor
             cpu_stan[9] = rejestry.r7;
             cpu_stan[10] = rejestry.r8;
             cpu_stan[11] = rejestry.r9;
-
+            Console.WriteLine("Zapisano rejestry do PCB.");
 
         }
 
@@ -112,6 +112,7 @@ namespace Processor
             rejestry.r7 = cpu_stan[9];
             rejestry.r8 = cpu_stan[10];
             rejestry.r9 = cpu_stan[11];
+            Console.WriteLine("ZAladowano rejestry z PCB.");
         }
 
         public PCB(string name)
