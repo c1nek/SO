@@ -1,4 +1,4 @@
-﻿
+
 
 using System;
 using System.Collections.Generic;
@@ -57,7 +57,7 @@ namespace Memory
             int temp1 = 256;
             if (temp1 > 65536)
             {
-                Console.Write("Rozmiar pamięci mniejszy od rozmiaru procesu!!!");
+                Console.WriteLine("Rozmiar pamięci mniejszy od rozmiaru procesu!");
 
             }
             else
@@ -79,7 +79,7 @@ namespace Memory
                 zawiadowca.RUNNING.ADR_PODR = best;
                 zawiadowca.RUNNING.PAM_PODR = true;
                 rejestry.r0 = 0;
-                Console.WriteLine("Znaleziono odpowiadający wolny blok FSB dla pamięci podręcznej");
+                Console.WriteLine("Znaleziono odpowiadający wolny blok FSB dla pamięci podręcznej.");
 
 
             }
@@ -87,12 +87,13 @@ namespace Memory
             {
                 best = 1;
                 rejestry.r0 = best;
-                Console.WriteLine("Nie znaleziono odpowiadającego wolnego bloku FSB dla pamięci podręcznej");
+                Console.WriteLine("Nie znaleziono odpowiadającego wolnego bloku FSB dla pamięci podręcznej.");
             }
         }
 
         public static void PRZESZUKAJ_LISTE()
         {
+            Console.WriteLine("Przeszukiwanie listy pamięci.");
             int best = -1;
             int temp = 65536;
 
@@ -102,7 +103,7 @@ namespace Memory
 
             if (temp1 > 65536)
             {
-                Console.WriteLine("Rozmiar pamięci mniejszy od rozmiaru procesu!!!");
+                Console.WriteLine("Rozmiar pamięci mniejszy od rozmiaru procesu!");
 
             }
             else
