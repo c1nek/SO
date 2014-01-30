@@ -15,14 +15,15 @@ namespace Supervisor
     {
         public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT, KONIEC, JUMPV };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
-        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
+        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG};
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF };
         public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
         
                     (byte)rozkaz.SVC,       (byte)wartosc_SVC.E,
+                    (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.ZERUJ_PAM,
 
                     (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,
                     (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('*'),
@@ -35,7 +36,7 @@ namespace Supervisor
                     (byte)rozkaz.SVC,       (byte)wartosc_SVC.C,
                     (byte)rozkaz.SVC,       (byte)wartosc_SVC.Y,         (byte)wartosc_TYP.PROG,(byte)Eprog.IN,                                     //Uruchomienie procesu *IN
 
- 
+                    (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.ZERUJ_PAM,
                     (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,               
                     (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('*'),                      
                     (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                           
@@ -52,7 +53,7 @@ namespace Supervisor
                     /////////////////////////////////////////////////////////////////////////////////////////////////////
                     (byte)rozkaz.FLAG, 0,///////////////////////////////////////////////////////////////////FLAGA 0
                     /////////////////////////////////////////////////////////////////////////////////////////////////
-
+                    (byte)rozkaz.METHOD,    (byte)wartosc_METHOD.ZERUJ_PAM,
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,       (byte)wartosc_TYP.R3,                                   //przepisanie adresu pamięci roboczej do rejestru 1
         /**/    (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,      (byte)wartosc_TYP.WART,Convert.ToByte('*'),             //wpisanie znaku do komórki pamięci w rejestrze 1
         /**/    (byte)rozkaz.INC,       (byte)wartosc_TYP.R1,                                                               //zwiększenie wartości (adresu) w rejestrze 1 o jeden
@@ -524,7 +525,11 @@ namespace Supervisor
 
         public static void ZERUJ_PAM()
         {
-
+            int pocz=(int)rejestry.r3;
+            for (int i = 0; i < 256; i++)
+            {
+                Mem.MEMORY[pocz + i] = 0;
+            }
         }
     }
 
@@ -603,12 +608,6 @@ namespace Supervisor
            adrProg[(int)Eprog.H] = i;
            i = Proc.zaladujXH(i);
            CWrite(ConsoleColor.Cyan, "XH ");
-           Console.Write("- wczytano");
-           Console.ReadLine();
-
-           adrProg[(int)Eprog.N] = i;
-           i = Proc.zaladujXN(i);
-           CWrite(ConsoleColor.Cyan, "XN ");
            Console.Write("- wczytano");
            Console.ReadLine();
 

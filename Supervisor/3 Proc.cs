@@ -32,8 +32,18 @@ namespace Process
 
         public static void XD()
         {
+            int i = 0;
+            UTF8Encoding kodowanie = new UTF8Encoding();
+            byte[] c = new byte[8];
+            for (; i < 8 && i != 0; i++)
+            {
+                c[i] = Mem.MEMORY[((int)rejestry.r2) + i];
+            }
+            string nazwa = kodowanie.GetString(c, 0, i);
+            
+        }            
 
-        }
+        
 
 
         public static byte[] XH = new byte[]//tego raczej nie robimy
@@ -50,19 +60,21 @@ namespace Process
             return m + i + 1;
         }
 
-        public static byte[] XN = new byte[]//tego raczej nie robimy znajdowanie bloku po nazwie. Jeżeli robimy to trzeba rozszerzyć interpreter oraz utworzyć klasę z polem string otaz polem PCB
+        public static void XN(string nazwa)
         {
-
-        };
-        public static int zaladujXN(int m)
-        {
-            int i;
-            for (i = 0; i < XN.Length; i++)
+            PCB tmp = zawiadowca.RUNNING;
+            int j = 0;
+            while (tmp != zawiadowca.RUNNING || j == 0)
             {
-                Mem.MEMORY[i + m] = XN[i];
+                if (tmp.NAME == nazwa)
+                {
+                    break;
+                }
+                tmp = tmp.NEXT_PCB_GROUP;
+                j++;
             }
-            return m + i + 1;
         }
+        
 
         public static byte[] XR = new byte[]
         {

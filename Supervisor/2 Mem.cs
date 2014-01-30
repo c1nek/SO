@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Processor;
+using Supervisor;
 
 namespace Memory
 {
@@ -16,7 +17,7 @@ namespace Memory
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF };
         public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
 
 
@@ -25,7 +26,7 @@ namespace Memory
         public static SEMAPHORE MEMORY_SEM = new SEMAPHORE();//semafor z domyslna wartoscia 0
         public static SEMAPHORE FSBSEM = new SEMAPHORE(1);//semafor wyłączności dostępu do listy bloków FSB
         public static byte[] MEMORY = new byte[65536];
-        public static object r0, r1, r2, r3, r4, r5, r6, r7, r8, r9;
+        public static object r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, lr;
         public static int podreczna;
 
         public static int zaladujXA(int m)
@@ -76,12 +77,15 @@ namespace Memory
 
                 rejestry.r3 = best;
                 rejestry.r0 = 0;
+                Console.WriteLine("Znaleziono odpowiadający wolny blok FSB dla pamięci podręcznej");
+
 
             }
             else
             {
                 best = 1;
                 rejestry.r0 = best;
+                Console.WriteLine("Nie znaleziono odpowiadającego wolnego bloku FSB dla pamięci podręcznej");
             }
         }
 
@@ -96,7 +100,7 @@ namespace Memory
 
             if (temp1 > 65536)
             {
-                Console.Write("Rozmiar pamięci mniejszy od rozmiaru procesu!!!");
+                Console.WriteLine("Rozmiar pamięci mniejszy od rozmiaru procesu!!!");
 
             }
             else
@@ -121,6 +125,7 @@ namespace Memory
                 tmp = 0x00000011;
                 Mem.MEMORY[(int)rejestry.r2 + 3] = (byte)tmp;
                 rejestry.r0 = 0;
+                Console.WriteLine("Znaleziono odpowiadający wolny blok FSB");
 
 
             }
@@ -128,6 +133,7 @@ namespace Memory
             {
                 best = 1;
                 rejestry.r0 = best;
+                Console.WriteLine("Nie znaleziono odpowiadającego wolnego bloku FSB");
             }
         }
 
@@ -148,11 +154,12 @@ namespace Memory
             r7 = rejestry.r7;
             r8 = rejestry.r8;
             r9 = rejestry.r9;
-            
+
         }
 
         public static void KONIEC_MEM()
         {
+            Console.WriteLine("Stan rejestrów przywrócony");
             rejestry.r0 = r0;
             rejestry.r1 = r1;
             rejestry.r2 = r2;
@@ -160,18 +167,37 @@ namespace Memory
             {
                 rejestry.r3 = r3;
             }
+            else
+            {
+                podreczna = 0;
+            }
             rejestry.r4 = r4;
             rejestry.r5 = r5;
             rejestry.r6 = r6;
             rejestry.r7 = r7;
             rejestry.r8 = r8;
             rejestry.r9 = r9;
-            
+
         }
 
+        public static void XAW()
+        {
+            Console.Write("Start programu"); Format.CWrite(ConsoleColor.Cyan, " XA");
+            Console.WriteLine("");
+            Console.Write("Stan rejestrów zapisany\n");
+        }
+
+        public static void XFW()
+        {
+            Console.Write("Start programu"); Format.CWrite(ConsoleColor.Cyan, " XF");
+            Console.WriteLine("");
+            Console.Write("Stan rejestrów zapisany\n");
+        }
         public static byte[] XA = new byte[]
             {
+               
                 (byte)rozkaz.METHOD,(byte)wartosc_METHOD.POCZATEK_MEM,
+                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XA,
                 (byte)rozkaz.MOV,(byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
                 (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//Blokuje dostęp do listy
                 (byte)rozkaz.JUMPF,(byte)wartosc_TYP.R0,28,//Skok w przypadku gdy chodzi tylko o pamięć podręczną
@@ -204,6 +230,7 @@ namespace Memory
         public static byte[] XF = new byte[]
             {
                 (byte)rozkaz.METHOD,(byte)wartosc_METHOD.POCZATEK_MEM,
+                (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XF,
                 (byte)rozkaz.MOV, (byte)wartosc_TYP.SEM, (byte)wartosc_SEM.FSBSEM,
                 (byte)rozkaz.SVC,(byte)wartosc_SVC.P,//Blokuje dostęp do listy
                 (byte)rozkaz.SVC,(byte)wartosc_SVC.B, //Wywołuje XB
@@ -221,6 +248,8 @@ namespace Memory
             };
         public static void XB()
         {
+            Console.Write("Start programu"); Format.CWrite(ConsoleColor.Cyan, " XB\n");
+
             int r = 0;
             if (rejestry.r2.GetType() == typeof(int))
             {
@@ -241,6 +270,7 @@ namespace Memory
             {
                 FSB_LIST.Clear();
                 FSB_LIST.Add(fsb);
+                Console.Write("Dołączono nowy blok do listy bloków FSB, adres: " + (a + r) + "-" + 65535 + ", rozmiar: " + (65535 - (a + r - 1)) + "/n");
             }
             else
             {
@@ -262,6 +292,7 @@ namespace Memory
                 {
                     fsb = new FSB(a + r, tmp, tmp - (a + r - 1));
                     FSB_LIST.Add(fsb);
+                    Console.Write("Dołączono nowy blok do listy bloków FSB, adres: " + (a + r) + "-" + tmp + ", rozmiar: " + (tmp - (a + r - 1)) + "/n");
                 }
 
                 if (tmp1 == 0)
@@ -280,12 +311,14 @@ namespace Memory
 
                             fsb = new FSB(pocz, konie, roz);
                             FSB_LIST.Add(fsb);
+                            Console.Write("Dołączono nowy blok do listy bloków FSB, adres: " + pocz + "-" + konie + ", rozmiar: " + roz + "/n");
                         }
                     }
 
                 }
                 var sortedList = FSB_LIST.OrderBy(x => x.wielkosc).ToList();
                 FSB_LIST = sortedList;
+                Console.WriteLine("Przesortowano liste bloków FSB");
             }
 
         }
@@ -295,6 +328,7 @@ namespace Memory
         {
             FSB free = new FSB(i, 65535, 65536 - i);
             FSB_LIST.Add(free);
+            Console.Write("\nDołączono pierwszy nowy blok do listy bloków FSB, adres: " + i + "-" + 65535 + ", rozmiar: " + (65536 - i));
             return true;
         }
     }
