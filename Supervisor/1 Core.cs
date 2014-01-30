@@ -35,7 +35,7 @@ namespace Processor
                 
                 
                 
-                if (licznik == 50 || wymusZmiane)
+                if (licznik==50|| wymusZmiane)
                 {
                     wymusZmiane = false;
                     NEXTTRY_MODIFIED = false;
@@ -51,8 +51,16 @@ namespace Processor
                                 NEXTTRY = RUNNING.NEXT_PCB_ALL;
                                 RUNNING.cpu_stan_laduj();
                                 i = false;
-                                licznik=0;
+                                licznik = 0;
                             }
+                            else
+                            {
+                                NEXTTRY =NEXTTRY.NEXT_PCB_ALL;
+                            }
+                        }
+                        else
+                        {
+                            NEXTTRY = NEXTTRY.NEXT_PCB_ALL;
                         }
                     }
                 }

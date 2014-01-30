@@ -625,18 +625,6 @@ namespace Supervisor
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[(int)Eprog.Y] = i;
-           i = Proc.zaladujXY(i);
-           CWrite(ConsoleColor.Cyan, "XY ");
-           Console.Write("- wczytano");
-           Console.ReadLine();
-
-           adrProg[(int)Eprog.Z] = i;
-           i = Proc.zaladujXZ(i);
-           CWrite(ConsoleColor.Cyan, "XZ ");
-           Console.Write("- wczytano");
-           Console.ReadLine();
-
            adrProg[(int)Eprog.Q] = i;
            i = Proc.zaladujXQUE(i);
            CWrite(ConsoleColor.Cyan, "XQUE ");
@@ -681,7 +669,7 @@ namespace Supervisor
            ibsub2.cpu_stan[1] = 0;
            ibsub2.cpu_stan[2] = 0;
            ibsub2.cpu_stan[3] = 0;
-           ibsub2.cpu_stan[4] = adrProg[(int)Interpreter.Inter.Eprog.IBSUP];
+           ibsub2.cpu_stan[4] = adrProg[(int)Eprog.IBSUP];
            ibsub1.cpu_stan[6] = 0;
            ibsub1.cpu_stan[7] = 0;
            ibsub1.cpu_stan[8] = 0;

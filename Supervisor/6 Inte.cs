@@ -135,19 +135,42 @@ namespace Interpreter
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.R)
                 {
-                    //wywołaj metode R klasy Proc
+                    rejestry.lr++;
+                    Console.WriteLine("SVC R");
+                    stos.Push(rejestry.lr);
+                    rejestry.lr = IPLRTN.adrProg[(int)Eprog.R];
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.S)
                 {
-                    //wywołaj metode S klasy Proc
+                    rejestry.lr++;
+                    Console.WriteLine("SVC S");
+                    stos.Push(rejestry.lr);
+                    rejestry.lr = IPLRTN.adrProg[(int)Eprog.S];
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.Y)
                 {
+                    rejestry.lr++;
+                    if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.PROG)
+                    {
+                        rejestry.lr++;
+                        if (Mem.MEMORY[(int)rejestry.lr] == (byte)Eprog.IN)
+                        {
+                            Proc.XY(IPLRTN.adrProg[(int)Eprog.IN]);
+                        }
+                        else if (Mem.MEMORY[(int)rejestry.lr] == (byte)Eprog.OUT)
+                            Proc.XY(IPLRTN.adrProg[(int)Eprog.OUT]);
+                    }
+                    else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.R8)
+                    {
+                        Proc.XY((int)rejestry.r8);
+                    }
                     //wywołaj metode Y klasy Proc (SVC, Y, REJESTR|PROG, Eprog)
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.Z)
                 {
-                    //wywołaj metode Z klasy Proc
+                    Console.WriteLine("SVC Z");
+                    rejestry.lr++;
+                    Proc.XZ();
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.Q)
                 {
