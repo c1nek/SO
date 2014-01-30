@@ -568,7 +568,9 @@ namespace Supervisor
            iplrtn.NEXT_PCB_ALL = iplrtn;
            iplrtn.NEXT_PCB_GROUP = iplrtn;
            iplrtn.STOPPED = true;
-
+            
+            CWrite(ConsoleColor.Red, "                             dogeOS \n");
+           CWrite(ConsoleColor.Green, "                 much improve. so amaze. WOW\n");
            Console.Write("Start programu"); CWrite(ConsoleColor.Cyan, " IPLRTN\n");
            Console.ReadLine();
            Console.WriteLine("Wczytywanie jądra systemu do pamięci");
