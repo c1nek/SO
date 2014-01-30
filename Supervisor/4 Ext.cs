@@ -1,4 +1,4 @@
-﻿
+
 
 using System;
 using System.Collections.Generic;
@@ -64,13 +64,14 @@ namespace External
 
         public static void CZYTNIK(string com, int xxxx, int ilosc)
         {
-
+            Console.WriteLine("Uruchomienie czytnika.");
             if (com == "READ")
             {
                 if (zawiadowca.RUNNING.LAST_PCB_GROUP == Ext.wersja)
                 {
                     System.IO.StreamReader file = new System.IO.StreamReader("plik1.txt");
                     string JOB = file.ReadLine();
+                    Console.WriteLine("Odczytanie $JOB z pliku1.");
                     if (JOB[0] == '$' && JOB[1] == 'J' && JOB[2] == 'O' && JOB[3] == 'B')
                     {
                         if (linia1 == 0)
@@ -169,6 +170,7 @@ namespace External
                 {
                     System.IO.StreamReader file = new System.IO.StreamReader("plik2.txt");
                     string JOB = file.ReadLine();
+                    Console.WriteLine("Odczytanie $JOB z pliku2.");
                     if (JOB[0] == '$' && JOB[1] == 'J' && JOB[2] == 'O' && JOB[3] == 'B')
                     {
                         if (linia2 == 0)
@@ -264,6 +266,7 @@ namespace External
 
             if (com == "PRIN")
             {
+                Console.WriteLine("Uruchomienie drukarki.");
                 if (zawiadowca.RUNNING.LAST_PCB_GROUP == Ext.wersja)
                 {
                     byte[] array = new byte[ilosc];
