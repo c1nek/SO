@@ -29,18 +29,9 @@ namespace Process
             XI();
         }
 
-        public static byte[] XD = new byte[]
+        public static void XD()
         {
 
-        };
-        public static int zaladujXD(int m)
-        {
-            int i;
-            for (i = 0; i < XD.Length; i++)
-            {
-                Mem.MEMORY[i + m] = XD[i];
-            }
-            return m + i + 1;
         }
 
 
