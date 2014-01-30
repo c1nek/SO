@@ -607,9 +607,9 @@ namespace Supervisor
            Console.Write("- wczytano");
            Console.ReadLine();
 
-           adrProg[(int)Eprog.H] = i;
-           i = Proc.zaladujXH(i);
-           CWrite(ConsoleColor.Cyan, "XH ");
+           adrProg[(int)Eprog.D] = i;
+           i = Proc.zaladujXD(i);
+           CWrite(ConsoleColor.Cyan, "XD ");
            Console.Write("- wczytano");
            Console.ReadLine();
 

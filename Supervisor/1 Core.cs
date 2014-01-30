@@ -70,8 +70,6 @@ namespace Processor
         public string NAME;
         public bool STOPPED;
         public bool BLOCKED;
-        public int instruction_done;
-        public bool czy_sprawdzony;
         public bool PAM_PODR;
         public int ADR_PODR;
         public PCB NEXT_PCB_ALL;
@@ -122,8 +120,6 @@ namespace Processor
             NAME = name;
             BLOCKED = false;
             STOPPED = false;
-            instruction_done = 0;
-            czy_sprawdzony = true;
             NEXT_PCB_ALL = null;
             LAST_PCB_ALL = null;
             NEXT_PCB_GROUP = null;
