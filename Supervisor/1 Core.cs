@@ -188,7 +188,6 @@ namespace Processor
         public SEMAPHORE MESSAGE_SEMAPHORE_RECEIVER;
         public PCB NEXT_SEMAPHORE_WAITER;
         public MESSAGE FIRST_MESSAGE;
-        public int adres_pocz;
         public object[] cpu_stan = new object[12];
 
         public void cpu_stan_zapisz()
@@ -223,7 +222,7 @@ namespace Processor
             rejestry.r9 = cpu_stan[11];
         }
 
-        public PCB(string name, int adres)
+        public PCB(string name)
         {
             
             NAME = name;
@@ -237,7 +236,7 @@ namespace Processor
             LAST_PCB_GROUP = null;
             MESSAGE_SEMAPHORE_COMMON=new SEMAPHORE(1);
             MESSAGE_SEMAPHORE_RECEIVER=new SEMAPHORE(1);
-            adres_pocz = adres;
+            
         }
     }
 

@@ -13,12 +13,12 @@ namespace Supervisor
 {
     public static class IBSUP
     {
-        public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT, KONIEC };
+        public enum rozkaz : byte { SVC, MOV, ADD, SUB, MUL, DIV, INC, DEC, JUMPF, JUMPR, JZ, JMP, METHOD, FLAG, POWROT, KONIEC, JUMPV };
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2 , EXPUNGE3, EXPUNGE4 };
-        public enum Eprog : byte { IBSUP, EXPUNGE, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER};
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA };
+        public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
         
@@ -477,7 +477,7 @@ namespace Supervisor
             int adrUser;
             int adrPocz = (int) rejestry.r3;
             adrUser = (int) rejestry.r8;
-            if (GadrUser==0)
+            if (GadrUser==0)//ma sie wykonac tylko raz
             {
                 GadrUser=adrUser;
             }
@@ -521,6 +521,11 @@ namespace Supervisor
                 Console.WriteLine("Otrzymano błędny komunikat podczas ładowania programu USERPROG. Kod: {0}", sTmp);
             }
         }
+
+        public static void ZERUJ_PAM()
+        {
+
+        }
     }
 
     /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -549,7 +554,7 @@ namespace Supervisor
            Console.WindowLeft = 0;
 
            //tworzy swój PCB dodaje go na listę ustaiwa wszystkie wartości by wskazywały na niego
-           PCB iplrtn = new PCB("*IPRTLN", 0);
+           PCB iplrtn = new PCB("*IPRTLN");
            rejestry.r2 = iplrtn;
            zawiadowca.RUNNING = iplrtn;
            zawiadowca.NEXTTRY = iplrtn;
@@ -592,18 +597,6 @@ namespace Supervisor
            adrProg[(int)Eprog.F] = i;
            i = Mem.zaladujXF(i);
            CWrite(ConsoleColor.Cyan, "XF ");
-           Console.Write("- wczytano");
-           Console.ReadLine();
-
-           adrProg[(int)Eprog.C] = i;
-           i = Proc.zaladujXC(i);
-           CWrite(ConsoleColor.Cyan, "XC ");
-           Console.Write("- wczytano");
-           Console.ReadLine();
-
-           adrProg[(int)Eprog.D] = i;
-           i = Proc.zaladujXD(i);
-           CWrite(ConsoleColor.Cyan, "XD ");
            Console.Write("- wczytano");
            Console.ReadLine();
 
@@ -665,7 +658,7 @@ namespace Supervisor
 
            Console.Write("Tworzenie PCB dla pierwszego strumienia zlecień");
            Console.ReadLine();
-           PCB ibsub1 = new PCB("*IBSUB", 0);
+           PCB ibsub1 = new PCB("*IBSUB");
            ibsub1.cpu_stan[0] = 0;
            ibsub1.cpu_stan[1] = 0;
            ibsub1.cpu_stan[2] = 0;
@@ -682,7 +675,7 @@ namespace Supervisor
            Console.Write("Tworzenie PCB dla drugiego strumienia zlecień");
            Console.ReadLine();
 
-           PCB ibsub2 = new PCB("*IBSUB", 0);
+           PCB ibsub2 = new PCB("*IBSUB");
            ibsub2.cpu_stan[0] = 0;
            ibsub2.cpu_stan[1] = 0;
            ibsub2.cpu_stan[2] = 0;

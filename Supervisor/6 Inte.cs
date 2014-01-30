@@ -16,8 +16,8 @@ namespace Interpreter
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG};
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY};
-        public enum Eprog : byte { IBSUP, IN, OUT=1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM };
+        public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
 
 
         public static byte[] LFlag = new byte[100];//tablica adresów flag
@@ -46,6 +46,8 @@ namespace Interpreter
             CWrite(ConsoleColor.Green, "Interpreter");
             Console.ReadLine();
 
+            
+            
             if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.SVC)
             {
                 rejestry.lr++;
@@ -71,6 +73,7 @@ namespace Interpreter
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.A)
                 {
                     rejestry.lr++;
+                    rejestry.r0 = 1;
                     stos.Push(rejestry.lr);
                     rejestry.lr = IPLRTN.adrProg[(int)Eprog.A];
                 
@@ -78,7 +81,9 @@ namespace Interpreter
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.E)
                 {
                     rejestry.lr++;
-                    rejestry.r9 = 0;
+                    rejestry.r0 = 0;
+                    stos.Push(rejestry.lr);
+                    rejestry.lr = IPLRTN.adrProg[(int)Eprog.A];
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.F)
                 {
@@ -2161,11 +2166,11 @@ namespace Interpreter
                     rejestry.lr++;
                     Ext.SPRAWDZENIE();
                 }
-                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.CZYTNIK)
+               /* else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.CZYTNIK)
                 {
                     rejestry.lr++;
                     Ext.CZYTNIK(Ext.com, Ext.adres, Ext.il_danych);
-                }
+                }*/
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.SCAN)
                 {
                     rejestry.lr++;
@@ -2180,6 +2185,16 @@ namespace Interpreter
                 {
                     rejestry.lr++;
                     Mem.PODRECZNA();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.POCZATEK_MEM)
+                {
+                    rejestry.lr++;
+                    Mem.POCZATEK_MEM();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.KONIEC_MEM)
+                {
+                    rejestry.lr++;
+                    Mem.KONIEC_MEM();
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.READ_MSG)
                 {
@@ -2215,6 +2230,16 @@ namespace Interpreter
                 {
                     rejestry.lr++;
                     IBSUP.EXPUNGE4();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.GRUPA)
+                {
+                    rejestry.lr++;
+                    Ext.GRUPA();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.ZERUJ_PAM)
+                {
+                    rejestry.lr++;
+                    IBSUP.ZERUJ_PAM();
                 }
 
                 //dokończyć
