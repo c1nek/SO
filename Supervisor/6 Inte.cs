@@ -7,6 +7,7 @@ using Memory;
 using Processor;
 using Supervisor;
 using External;
+using Process;
 //do dokończenia
 namespace Interpreter
 {
@@ -43,8 +44,7 @@ namespace Interpreter
         public static void Run()
         {
 
-            CWrite(ConsoleColor.Green, "Interpreter");
-            Console.ReadLine();
+            CWrite(ConsoleColor.Green, "Interpreter: ");
 
             
             
@@ -56,23 +56,27 @@ namespace Interpreter
                 {
                     //wywołaj metode P klasy semafor
                     rejestry.lr++;
+                    Console.Write("SVC P");
                     SEMAPHORE.P();
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.V)
                 {
                     rejestry.lr++;
+                    Console.Write("SVC V");
                     SEMAPHORE.V();
                     //wywołaj metode V klasy semafor
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.G)
                 {
                     rejestry.lr++;
+                    Console.Write("SVC .");
                     return;
                     //wywołaj metode Run zawiadowcy
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.A)
                 {
                     rejestry.lr++;
+                    Console.Write("SVC A");
                     rejestry.r0 = 1;
                     stos.Push(rejestry.lr);
                     rejestry.lr = IPLRTN.adrProg[(int)Eprog.A];
@@ -81,6 +85,7 @@ namespace Interpreter
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.E)
                 {
                     rejestry.lr++;
+                    Console.Write("SVC E");
                     rejestry.r0 = 0;
                     stos.Push(rejestry.lr);
                     rejestry.lr = IPLRTN.adrProg[(int)Eprog.A];
@@ -92,10 +97,14 @@ namespace Interpreter
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.B)
                 {
                     rejestry.lr++;
+                    Console.Write("SVC B");
                     Mem.XB();
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.C)
                 {
+                    rejestry.lr++;
+                    Console.Write("SVC C");
+                    Proc.XC();
                     //wywołaj metode C klasy Proc
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.D)

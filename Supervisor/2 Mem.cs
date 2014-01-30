@@ -248,7 +248,8 @@ namespace Memory
             };
         public static void XB()
         {
-            Console.Write("Start programu"); Format.CWrite(ConsoleColor.Cyan, " XB\n");
+            Console.Write("Start programu"); Format.CWrite(ConsoleColor.Cyan, " XB");
+            Console.WriteLine("");
 
             int r = 0;
             if (rejestry.r2.GetType() == typeof(int))
@@ -270,7 +271,7 @@ namespace Memory
             {
                 FSB_LIST.Clear();
                 FSB_LIST.Add(fsb);
-                Console.Write("Dołączono nowy blok do listy bloków FSB, adres: " + (a + r) + "-" + 65535 + ", rozmiar: " + (65535 - (a + r - 1)) + "/n");
+                Console.WriteLine("Dołączono nowy blok do listy bloków FSB, adres: " + (a + r) + "-" + 65535 + ", rozmiar: " + (65535 - (a + r - 1)));
             }
             else
             {
@@ -292,7 +293,7 @@ namespace Memory
                 {
                     fsb = new FSB(a + r, tmp, tmp - (a + r - 1));
                     FSB_LIST.Add(fsb);
-                    Console.Write("Dołączono nowy blok do listy bloków FSB, adres: " + (a + r) + "-" + tmp + ", rozmiar: " + (tmp - (a + r - 1)) + "/n");
+                    Console.WriteLine("Dołączono nowy blok do listy bloków FSB, adres: " + (a + r) + "-" + tmp + ", rozmiar: " + (tmp - (a + r - 1)));
                 }
 
                 if (tmp1 == 0)
@@ -311,7 +312,7 @@ namespace Memory
 
                             fsb = new FSB(pocz, konie, roz);
                             FSB_LIST.Add(fsb);
-                            Console.Write("Dołączono nowy blok do listy bloków FSB, adres: " + pocz + "-" + konie + ", rozmiar: " + roz + "/n");
+                            Console.WriteLine("Dołączono nowy blok do listy bloków FSB, adres: " + pocz + "-" + konie + ", rozmiar: " + roz);
                         }
                     }
 

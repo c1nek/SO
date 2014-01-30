@@ -40,6 +40,7 @@ namespace Process
                 c[i] = Mem.MEMORY[((int)rejestry.r2) + i];
             }
             string nazwa = kodowanie.GetString(c, 0, i);
+            PCB usun = XN(nazwa);
             
         }            
 
@@ -60,7 +61,7 @@ namespace Process
             return m + i + 1;
         }
 
-        public static void XN(string nazwa)
+        public static PCB XN(string nazwa)
         {
             PCB tmp = zawiadowca.RUNNING;
             int j = 0;
@@ -68,11 +69,14 @@ namespace Process
             {
                 if (tmp.NAME == nazwa)
                 {
-                    break;
+                    Console.WriteLine("XN: znaleziono PCB o nazwie {0}", nazwa);
+                    return tmp;
                 }
                 tmp = tmp.NEXT_PCB_GROUP;
                 j++;
             }
+            Console.WriteLine("XN: nie znaleziono PCB o nazwie {0}", nazwa);
+            return null;
         }
         
 

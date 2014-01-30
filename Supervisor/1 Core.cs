@@ -72,7 +72,8 @@ namespace Processor
         public bool BLOCKED;
         public int instruction_done;
         public bool czy_sprawdzony;
-        public string[] MEMORY_BLOCK;
+        public bool PAM_PODR;
+        public int ADR_PODR;
         public PCB NEXT_PCB_ALL;
         public PCB LAST_PCB_ALL;
         public PCB NEXT_PCB_GROUP;
@@ -129,7 +130,8 @@ namespace Processor
             LAST_PCB_GROUP = null;
             MESSAGE_SEMAPHORE_COMMON=new SEMAPHORE(1);
             MESSAGE_SEMAPHORE_RECEIVER=new SEMAPHORE(1);
-            
+            PAM_PODR = false;
+            ADR_PODR = 0;
         }
     }
 
@@ -157,6 +159,7 @@ namespace Processor
     public class SEMAPHORE
     {
         public int VALUE;
+        public string NAME;
         public List<PCB> semaphoreList = new List<PCB>();
         public PCB FIRST_WAITER=null;
         public SEMAPHORE()
