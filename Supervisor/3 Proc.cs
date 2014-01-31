@@ -16,9 +16,8 @@ namespace Process
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS, XR1, XR2, XS1, XS2, XS3, ZAPIS_R8 };
         public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
-
         public static object zap = null;
         public static bool przywroc = false;
         public static object zap2 = null;
@@ -33,13 +32,15 @@ namespace Process
             int i = 0;
             UTF8Encoding kodowanie = new UTF8Encoding();
             byte[] c = new byte[8];
-            for (; i < 8 && Mem.MEMORY[((int)rejestry.r2) + i] != 0; i++)
+            for (; i < 8 && Mem.MEMORY[((int)rejestry.r2) + i] != 0 && Mem.MEMORY[((int)rejestry.r2) + i] != '='; i++)
             {
                 c[i] = Mem.MEMORY[((int)rejestry.r2) + i];
             }
-            string nazwa = kodowanie.GetString(c, 0, i);
+            
+              string nazwa = kodowanie.GetString(c, 0, i);
 
             PCB nowy = new PCB(nazwa);
+            nowy.grupa = zawiadowca.RUNNING.grupa;
             nowy.STOPPED = true;
             nowy.BLOCKED = false;
             rejestry.r2 = nowy;
@@ -135,34 +136,30 @@ namespace Process
             (byte)rozkaz.SVC,   (byte)wartosc_SVC.P,
             (byte)rozkaz.MOV,   (byte)wartosc_TYP.SEM,  (byte)wartosc_SEM.COMMON,
             (byte)rozkaz.SVC,   (byte)wartosc_SVC.P,
-            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XR,
+            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XR1,
             (byte)rozkaz.MOV,   (byte)wartosc_TYP.SEM,  (byte)wartosc_SEM.COMMON,
             (byte)rozkaz.SVC,   (byte)wartosc_SVC.V,
-            (byte)rozkaz.MOV,   (byte)wartosc_TYP.SEM,  (byte)wartosc_SEM.RECEIVER,
-            (byte)rozkaz.SVC,   (byte)wartosc_SVC.V,
-            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XR,
+            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XR2,
             (byte)rozkaz.POWROT
         };
         
         public static void XRM()
         {
-            
-            if (zap2 == null)
-            {
                 Console.WriteLine("Odbieranie komunikatu");
                 zap2 = rejestry.r2;
-            }
-            else if (przywroc)
+        }
+            public static void XR2()
             {
                 rejestry.r2 = zap2;
                 zap2 = null;
                 przywroc = false;
             }
-            else
-            {
-                string nadawca=zawiadowca.RUNNING.FIRST_MESSAGE.SENDER.NAME;
-                int dl = zawiadowca.RUNNING.FIRST_MESSAGE.SIZE;
-                byte [] tekst = zawiadowca.RUNNING.FIRST_MESSAGE.TEXT;
+           public static void XR1()
+           {
+               MESSAGE t = zawiadowca.RUNNING.FIRST_MESSAGE.Dequeue();
+                string nadawca=t.SENDER.NAME;
+                int dl = t.SIZE;
+                byte [] tekst = t.TEXT;
                 int tmp = (int)zap2;
                 UTF8Encoding kodowanie = new UTF8Encoding();
                 kodowanie.GetBytes(nadawca,0,nadawca.Length,Mem.MEMORY,tmp);
@@ -172,13 +169,8 @@ namespace Process
                 else
                     Mem.MEMORY[tmp] = BitConverter.GetBytes(dl)[3];
                 Array.Copy(tekst, 0, Mem.MEMORY, tmp + 1, dl);
-                MESSAGE tm = zawiadowca.RUNNING.FIRST_MESSAGE;
-                zawiadowca.RUNNING.FIRST_MESSAGE = zawiadowca.RUNNING.FIRST_MESSAGE.NEXT;
-                tm.NEXT = null;
-
-                przywroc = true;
             }
-        }
+        
 
         public static int zaladujXR(int m)
         {
@@ -195,14 +187,13 @@ namespace Process
             (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XS,
             (byte)rozkaz.MOV,   (byte)wartosc_TYP.SEM,  (byte)wartosc_SEM.R2_COMMON,
             (byte)rozkaz.SVC,   (byte)wartosc_SVC.P,
-            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XS,
-            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XS,
+            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XS1,
             (byte)rozkaz.MOV,   (byte)wartosc_TYP.SEM,  (byte)wartosc_SEM.R2_RECEIVER,
             (byte)rozkaz.SVC,   (byte)wartosc_SVC.V,
-            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XS,
+            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XS2,
             (byte)rozkaz.MOV,   (byte)wartosc_TYP.SEM,  (byte)wartosc_SEM.R2_COMMON,
             (byte)rozkaz.SVC,   (byte)wartosc_SVC.V,
-            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XS,
+            (byte)rozkaz.METHOD,(byte)wartosc_METHOD.XS3,
             (byte)rozkaz.POWROT
         };
         public static int zaladujXS(int m)
@@ -217,70 +208,51 @@ namespace Process
 
 
         public static void XSM()
-        
         {
-            if (zap3 == null)
-            {
-                Console.WriteLine("Wysyłanie komunikatu");
-                zap3 = rejestry.r2;
 
-                int i = 0;
-                UTF8Encoding kodowanie = new UTF8Encoding();
-                byte[] c = new byte[8];
-                for (; i < 8 && Mem.MEMORY[((int)rejestry.r2) + i] != 0; i++)
-                {
-                    c[i] = Mem.MEMORY[((int)rejestry.r2) + i];
-                }
-                string odbiorca = kodowanie.GetString(c, 0, i);
-                odb=XN(odbiorca);
-                rejestry.r2 = odb;
-            }
-            else if (licz == 0)
+            Console.WriteLine("Wysyłanie komunikatu");
+            zap3 = rejestry.r2;
+
+            int i = 0;
+            UTF8Encoding kodowanie = new UTF8Encoding();
+            byte[] c = new byte[8];
+            for (; i < 8 && Mem.MEMORY[((int)rejestry.r2) + i] != 0; i++)
             {
-                rejestry.r2 = odb;
-                licz++;
+                c[i] = Mem.MEMORY[((int)rejestry.r2) + i];
             }
-            else if (licz == 2)
-            {
-                rejestry.r2 = odb;
-                licz = 3;
-                przywroc1 = true;
-            }
-            else if (przywroc1==true)
+            string odbiorca = kodowanie.GetString(c, 0, i);
+            odb = XN(odbiorca);
+            rejestry.r2 = odb;
+        }
+            
+        
+            public static void XS3()
             {
                 rejestry.r2 = zap3;
                 zap3 = null;
-                    przywroc1=false;
+
             }
-            else
+            public static void XS2()
             {
-                
-                
-                
-                
-                
+                rejestry.r2 = odb;
+            }
+            public static void XS1()
+            {
+
+
+
+                rejestry.r2 = odb;
                 MESSAGE m = new MESSAGE();
                 m.SIZE = Mem.MEMORY[(int)zap3 + 8];
                 m.SENDER = zawiadowca.RUNNING;
                 Array.Copy(Mem.MEMORY, (int)zap3 + 9, m.TEXT, 0, m.SIZE);
-                byte[] tekst = m.TEXT;
+                
                
-                MESSAGE tmp=odb.FIRST_MESSAGE;
-                if (tmp != null)
-                {
-                    while (tmp.NEXT != null)
-                    {
-                        tmp = tmp.NEXT;
-                    }
-                    tmp.NEXT = m;
-                }
-                else
-                    odb.FIRST_MESSAGE = m;
 
+                odb.FIRST_MESSAGE.Enqueue(m);
                 rejestry.r2 = odb;
-                licz = 2;
             }
-        }
+        
 
         public static void XY(int adr)
         {
@@ -288,7 +260,7 @@ namespace Process
             int i = 0;
             UTF8Encoding kodowanie = new UTF8Encoding();
             byte[] c = new byte[8];
-            for (; i < 8 && Mem.MEMORY[((int)rejestry.r2) + i] != 0; i++)
+            for (; i < 8 && Mem.MEMORY[((int)rejestry.r2) + i] != 0 && Mem.MEMORY[((int)rejestry.r2) + i] != '='; i++)
             {
                 c[i] = Mem.MEMORY[((int)rejestry.r2) + i];
             }

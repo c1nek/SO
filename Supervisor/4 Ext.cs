@@ -17,7 +17,7 @@ namespace External
 
     class Ext
     {
-        public static PCB wersja;
+        public static int grupa_z;
         public static int il_danych, adres;
         public static int linia1 = 0;
         public static int linia2 = 0;
@@ -26,9 +26,8 @@ namespace External
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS, XR1, XR2, XS1, XS2, XS3, ZAPIS_R8 };
         public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
-
 
         private static byte[] mem = new byte[]{
      
@@ -67,7 +66,7 @@ namespace External
             Console.WriteLine("Uruchomienie czytnika.");
             if (com == "READ")
             {
-                if (zawiadowca.RUNNING.LAST_PCB_GROUP == Ext.wersja)
+                if (zawiadowca.RUNNING.grupa == grupa_z)
                 {
                     System.IO.StreamReader file = new System.IO.StreamReader("plik1.txt");
                     string JOB = file.ReadLine();
@@ -80,6 +79,9 @@ namespace External
                             {
                                 Mem.MEMORY[xxxx + i] = Convert.ToByte(JOB[i]);
                             }
+                            Mem.MEMORY[(int)rejestry.r2 + 8] = 2;
+                            Mem.MEMORY[(int)rejestry.r2 + 9] = Convert.ToByte('O');
+                            Mem.MEMORY[(int)rejestry.r2 + 10] = Convert.ToByte('K');
                             linia1++;
                         }
                         else
@@ -90,9 +92,9 @@ namespace External
                             //komunikat NO
                             if (lines.Length < linia1)
                             {
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 8] = 2;
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 9] = Convert.ToByte('N');
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 10] = Convert.ToByte('O');
+                                Mem.MEMORY[(int)rejestry.r2 + 8] = 2;
+                                Mem.MEMORY[(int)rejestry.r2 + 9] = Convert.ToByte('N');
+                                Mem.MEMORY[(int)rejestry.r2 + 10] = Convert.ToByte('O');
                             }
                             else
                             {
@@ -147,9 +149,9 @@ namespace External
 
 
                                 //przesłanie komunikatu OK
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 8] = 2;
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 9] = Convert.ToByte('O');
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 10] = Convert.ToByte('K');
+                                Mem.MEMORY[(int)rejestry.r2 + 8] = 2;
+                                Mem.MEMORY[(int)rejestry.r2 + 9] = Convert.ToByte('O');
+                                Mem.MEMORY[(int)rejestry.r2 + 10] = Convert.ToByte('K');
 
                                 linia1++;
                             }
@@ -166,7 +168,7 @@ namespace External
                 }
 
 
-                else if (zawiadowca.RUNNING.LAST_PCB_GROUP != Ext.wersja)
+                else if (zawiadowca.RUNNING.grupa != grupa_z)
                 {
                     System.IO.StreamReader file = new System.IO.StreamReader("plik2.txt");
                     string JOB = file.ReadLine();
@@ -179,6 +181,9 @@ namespace External
                             {
                                 Mem.MEMORY[xxxx + i] = Convert.ToByte(JOB[i]);
                             }
+                            Mem.MEMORY[(int)rejestry.r2 + 8] = 2;
+                            Mem.MEMORY[(int)rejestry.r2 + 9] = Convert.ToByte('O');
+                            Mem.MEMORY[(int)rejestry.r2 + 10] = Convert.ToByte('K');
                             linia2++;
                         }
                         else
@@ -189,9 +194,9 @@ namespace External
                             //komunikat NO
                             if (lines.Length < linia2)
                             {
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 8] = 2;
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 9] = Convert.ToByte('N');
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 10] = Convert.ToByte('O');
+                                Mem.MEMORY[(int)rejestry.r2 + 8] = 2;
+                                Mem.MEMORY[(int)rejestry.r2 + 9] = Convert.ToByte('N');
+                                Mem.MEMORY[(int)rejestry.r2 + 10] = Convert.ToByte('O');
                             }
                             else
                             {
@@ -216,10 +221,12 @@ namespace External
                                 int counter2 = 0;
                                 foreach (string typeString in wyrazy)
                                 {
+                                    int i = 0;
                                     rozkaz rozkazValue;
                                     if (Enum.TryParse(typeString, out rozkazValue))
                                     {
                                         Mem.MEMORY[xxxx + counter2 + 2] = (byte)rozkazValue;
+                                        i = 1;
                                     }
 
 
@@ -227,27 +234,34 @@ namespace External
                                     if (Enum.TryParse(typeString, out wartosc_SVCValue))
                                     {
                                         Mem.MEMORY[xxxx + counter2 + 2] = (byte)wartosc_SVCValue;
+                                        i = 1;
                                     }
 
                                     wartosc_TYP wartosc_TYPValue;
                                     if (Enum.TryParse(typeString, out wartosc_TYPValue))
                                     {
                                         Mem.MEMORY[xxxx + counter2 + 2] = (byte)wartosc_TYPValue;
+                                        i = 1;
                                     }
 
                                     wartosc_SEM wartosc_SEMValue;
                                     if (Enum.TryParse(typeString, out wartosc_SEMValue))
                                     {
                                         Mem.MEMORY[xxxx + counter2 + 2] = (byte)wartosc_SEMValue;
+                                        i = 1;
+                                    }
+                                    if (i == 0)
+                                    {
+                                        Mem.MEMORY[xxxx + counter2 + 2]=byte.Parse(typeString);
                                     }
 
                                     counter2++;
                                 }
 
                                 //przesłanie komunikatu OK
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 8] = 2;
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 9] = Convert.ToByte('O');
-                                Mem.MEMORY[(int)wartosc_TYP.R2 + 10] = Convert.ToByte('K');
+                                Mem.MEMORY[(int)rejestry.r2 + 8] = 2;
+                                Mem.MEMORY[(int)rejestry.r2 + 9] = Convert.ToByte('O');
+                                Mem.MEMORY[(int)rejestry.r2 + 10] = Convert.ToByte('K');
 
                                 linia2++;
                             }
@@ -267,12 +281,13 @@ namespace External
             if (com == "PRIN")
             {
                 Console.WriteLine("Uruchomienie drukarki.");
-                if (zawiadowca.RUNNING.LAST_PCB_GROUP == Ext.wersja)
+                if (zawiadowca.RUNNING.grupa == grupa_z)
                 {
                     byte[] array = new byte[ilosc];
-                    for (; xxxx < xxxx + ilosc; xxxx++)
+                    int lol = xxxx;
+                    for (int i = 0; xxxx < lol + ilosc; xxxx++)
                     {
-                        int i = 0;
+                        
                         array[i] = Mem.MEMORY[xxxx];
                         i++;
                     }
@@ -287,10 +302,11 @@ namespace External
                     }
                 }
 
-                if (zawiadowca.RUNNING.LAST_PCB_GROUP != Ext.wersja)
+                if (zawiadowca.RUNNING.grupa != grupa_z)
                 {
                     byte[] array = new byte[ilosc];
-                    for (; xxxx < xxxx + ilosc; xxxx++)
+                    int lol = xxxx;
+                    for (; xxxx < lol + ilosc; xxxx++)
                     {
                         int i = 0;
                         array[i] = Mem.MEMORY[xxxx];
@@ -357,11 +373,12 @@ namespace External
 
         public static void GRUPA()
         {
-            if (Ext.wersja != null) Ext.wersja = zawiadowca.RUNNING.LAST_PCB_GROUP;
+            if (grupa_z == 0) grupa_z = zawiadowca.RUNNING.grupa;
             rejestry.r2 = rejestry.r3;
         }
 
 
     }
 }
+
 

@@ -29,17 +29,8 @@ namespace Processor
                 Format.RejestyWrite();
 
                 Format.CWrite(ConsoleColor.Green, "Zawiadowca");
-                Console.ReadLine();
+               // Console.ReadLine();
 
-                
-                
-                
-                
-                
-                
-                
-                
-                
                 
                 if (licznik==50||wymusZmiane==true)
                 {
@@ -98,7 +89,7 @@ namespace Processor
         public SEMAPHORE MESSAGE_SEMAPHORE_COMMON;
         public SEMAPHORE MESSAGE_SEMAPHORE_RECEIVER;
         public PCB NEXT_SEMAPHORE_WAITER;
-        public MESSAGE FIRST_MESSAGE;
+        public Queue <MESSAGE> FIRST_MESSAGE;
         public Stack<int> stos = new Stack<int>();
         public object[] cpu_stan = new object[12];
         public int[] LFlag = new int[100];
@@ -109,6 +100,7 @@ namespace Processor
         public object zap3_z ;
         public int licz_z ;
         public PCB odb_z;
+        public int grupa = 0;
         public void cpu_stan_zapisz()
         {
             zap_Z = Proc.zap;
@@ -172,11 +164,13 @@ namespace Processor
             LAST_PCB_ALL = null;
             NEXT_PCB_GROUP = null;
             LAST_PCB_GROUP = null;
+            FIRST_MESSAGE = new Queue<MESSAGE>();
             MESSAGE_SEMAPHORE_COMMON=new SEMAPHORE(1,"COMMON");
             MESSAGE_SEMAPHORE_RECEIVER=new SEMAPHORE(0,"RECEIVER");
             PAM_PODR = false;
             ADR_PODR = 0;
         }
+
     }
 
     public static  class rejestry
@@ -206,8 +200,7 @@ namespace Processor
     {
         public int VALUE;
         public string NAME;
-        public List<PCB> semaphoreList = new List<PCB>();
-        public PCB FIRST_WAITER = null;
+        public Queue<PCB> semaphoreList = new Queue<PCB>();
         public SEMAPHORE(string name)
         {
             VALUE = 0;
@@ -226,14 +219,7 @@ namespace Processor
             S.VALUE--;
             if (S.VALUE < 0)
             {
-                S.semaphoreList.Add(zawiadowca.RUNNING);
-                if (S.VALUE == (-1))
-                    S.FIRST_WAITER = zawiadowca.RUNNING;
-                else
-                {
-                    PCB temp = S.semaphoreList.Last();
-                    temp.NEXT_SEMAPHORE_WAITER = zawiadowca.RUNNING;
-                }
+                S.semaphoreList.Enqueue(zawiadowca.RUNNING);
                 zawiadowca.RUNNING.BLOCKED = true;
                 zawiadowca.wymusZmiane = true;
                 return;
@@ -246,21 +232,20 @@ namespace Processor
         }
 
         public static void V()
+        
         {
             Console.WriteLine("Wykonano operacje V na semaforze " + ((SEMAPHORE)rejestry.r2).NAME);
             SEMAPHORE S = (SEMAPHORE)rejestry.r2;
             S.VALUE++;
             if (S.VALUE <= 0)
             {
-                S.FIRST_WAITER.BLOCKED = false;
+                PCB t = S.semaphoreList.Dequeue();
+                t.BLOCKED = false;
                 if (zawiadowca.NEXTTRY_MODIFIED == false)
                 {
-                    zawiadowca.NEXTTRY = S.FIRST_WAITER;
+                    zawiadowca.NEXTTRY = t;
                     zawiadowca.NEXTTRY_MODIFIED = true;
                 }
-                S.FIRST_WAITER = S.FIRST_WAITER.NEXT_SEMAPHORE_WAITER;
-                S.semaphoreList[0].NEXT_SEMAPHORE_WAITER = null;
-                S.semaphoreList.RemoveAt(0);
                 return;
 
             }

@@ -96,9 +96,9 @@ namespace Memory
             int best = -1;
             int temp = 65536;
 
-            int temp1 = Mem.MEMORY[(int)rejestry.r2];
+            int temp1 = Mem.MEMORY[(int)r2];
             temp1 = temp1 << 8;
-            temp1 += Mem.MEMORY[(int)rejestry.r2 + 1];
+            temp1 += Mem.MEMORY[(int)r2 + 1];
 
             if (temp1 > 65536)
             {
@@ -123,9 +123,9 @@ namespace Memory
                 rejestry.r3 = tmp;
                 tmp = 0x00001100;
                 tmp = tmp >> 8;
-                Mem.MEMORY[(int)rejestry.r2 + 2] = (byte)tmp;
+                Mem.MEMORY[(int)r2 + 2] = (byte)tmp;
                 tmp = 0x00000011;
-                Mem.MEMORY[(int)rejestry.r2 + 3] = (byte)tmp;
+                Mem.MEMORY[(int)r2 + 3] = (byte)tmp;
                 rejestry.r0 = 0;
                 Console.WriteLine("Znaleziono odpowiadający wolny blok FSB");
 

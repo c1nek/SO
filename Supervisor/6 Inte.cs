@@ -17,7 +17,7 @@ namespace Interpreter
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS, XR1, XR2, XS1, XS2, XS3, ZAPIS_R8 };
         public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
 
 
@@ -53,7 +53,6 @@ namespace Interpreter
             
             
             
-            
             if (Mem.MEMORY[(int)rejestry.lr] == (byte)rozkaz.SVC)
             {
                 rejestry.lr++;
@@ -71,6 +70,7 @@ namespace Interpreter
                     Console.WriteLine("SVC V");
                     SEMAPHORE.V();
                     //wywołaj metode V klasy semafor
+                
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_SVC.G)
                 {
@@ -2330,6 +2330,36 @@ namespace Interpreter
                     rejestry.lr++;
                     Proc.XSM();
                 }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.XR1)
+                {
+                    rejestry.lr++;
+                    Proc.XR1();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.XR2)
+                {
+                    rejestry.lr++;
+                    Proc.XR2();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.XS1)
+                {
+                    rejestry.lr++;
+                    Proc.XS1();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.XS2)
+                {
+                    rejestry.lr++;
+                    Proc.XS2();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.XS3)
+                {
+                    rejestry.lr++;
+                    Proc.XS3();
+                }
+                else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_METHOD.ZAPIS_R8)
+                {
+                    rejestry.lr++;
+                    IBSUP.ZAPIS_R8();
+                }
 
                 //dokończyć
             }//METHOD możliwe rozszerzenia                                                      (METHOD, <nazwa metody>, <opcjonalnie parametry>)
@@ -2351,7 +2381,8 @@ namespace Interpreter
                     rejestry.lr++;
                     if ((int)rejestry.r0 == 0)
                         rejestry.lr = zawiadowca.RUNNING.LFlag[(int)Mem.MEMORY[rejestry.lr]];
-
+                    else
+                        rejestry.lr++;
                     
                 }
                 else if (Mem.MEMORY[(int)rejestry.lr] == (byte)wartosc_TYP.PROG)
@@ -2359,7 +2390,8 @@ namespace Interpreter
                     rejestry.lr++;
                     if ((int)rejestry.r0 == 0)
                         rejestry.lr = IPLRTN.adrProg[(int)Mem.MEMORY[rejestry.lr]];
-
+                    else
+                        rejestry.lr++;
                     
                 }
             }//JZ skok przy r0==0 do flagi działa                                               (JZ, WART|PROG, numer flagi lub nazwa programu)

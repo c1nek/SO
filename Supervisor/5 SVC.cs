@@ -17,7 +17,7 @@ namespace Supervisor
         public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
         public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
         public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS };
+        public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS, XR1, XR2, XS1, XS2, XS3, ZAPIS_R8 };
         public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
         //Pamięć wstępna. Z niej ładowane do pamięci głównej
         private static byte[] mem = new byte[]{
@@ -115,16 +115,16 @@ namespace Supervisor
                 /////LOAD///////LOAD////LOAD////////LOAD/////LOAD////LOAD//////LOAD//////LOAD////LOAD/////LOAD///////////
                 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,           (byte)wartosc_TYP.R5,
-                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,           (byte)wartosc_TYP.MEM,
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R0,           (byte)wartosc_TYP.R5,
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R1,           (byte)wartosc_TYP.R3,
                 (byte)rozkaz.MUL,       (byte)wartosc_TYP.WART,         8,
                 (byte)rozkaz.MOV,       (byte)wartosc_TYP.MEM,          (byte)wartosc_TYP.R0,
-                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,           (byte)wartosc_TYP.R1,   //pomnożenie rozmiaru z kary job razy 8
+                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R2,           (byte)wartosc_TYP.R1,   
                 (byte)rozkaz.MOV,       (byte)wartosc_TYP.R9,           (byte)wartosc_TYP.R0,   //zapamiętanie wielkosci pamieci
                 (byte)rozkaz.SVC,       (byte)wartosc_SVC.A,                                    //Przydzielenie pamięci na program użytkownika
                 (byte)rozkaz.INC,       (byte)wartosc_TYP.R2,
                 (byte)rozkaz.INC,       (byte)wartosc_TYP.R2,                                   
-                (byte)rozkaz.MOV,       (byte)wartosc_TYP.R8,           (byte)wartosc_TYP.R2,   //zapamiętanie adresu pamięci użytkownika
+                (byte)rozkaz.METHOD,       (byte)wartosc_METHOD.ZAPIS_R8,              //zapamiętanie adresu pamięci użytkownika
 
                 //////////////////////////////////////////////////////////////////////////////////////////
                 (byte)rozkaz.FLAG,      1,//////////////////////////////////////////////////FLAGA 1
@@ -153,6 +153,9 @@ namespace Supervisor
         };
 
 
+
+
+
         private static byte[] EXPUNGE = new byte[]{
 
             (byte)rozkaz.METHOD,       (byte)wartosc_METHOD.EXPUNGE1,//pobranie running
@@ -171,6 +174,13 @@ namespace Supervisor
             
             (byte)rozkaz.JMP,           (byte)wartosc_TYP.WART, 0//Powrót z pogramu EXPUNGE
         };
+
+        public static void ZAPIS_R8()
+        {
+            int tmp=Mem.MEMORY[(int)rejestry.r2] << 8;
+            tmp += Mem.MEMORY[(int)rejestry.r2 + 1];
+            rejestry.r8 = tmp;
+        }
 
 
         public static void EXPUNGE1()
@@ -303,7 +313,7 @@ namespace Supervisor
                 Console.ReadLine();
                 Environment.Exit(0);
             }
-            int wielkosc = Mem.MEMORY[i];//wielkosc komunikatu
+            int wielkosc = Mem.MEMORY[i++];//wielkosc komunikatu
             j = i;
             for (; i < j + wielkosc; i++)
             {
@@ -312,13 +322,14 @@ namespace Supervisor
                     komunikat += (char)Mem.MEMORY[i];//???? nie wiem czy działa
                 }
             }
+
             if (komunikat != "OK")
             {
-                System.Console.WriteLine("Blad: zly komunikat. Oczekiwana wartosc to OK. Otrzymano {0}", nazwa);
+                System.Console.WriteLine("Blad: zly komunikat. Oczekiwana wartosc to OK. Otrzymano {0}", komunikat);
                 Console.ReadLine();
                 Environment.Exit(0);
             }
-            i = (int)rejestry.r2 +34;
+            i = (int)rejestry.r2 +32;
             if (Mem.MEMORY[i] != '$')
             {
                 System.Console.WriteLine("Blad: inna karta. Oczekiwana wartosc to $JOB. Otrzymano {0}{1}{2}{3}", (char)Mem.MEMORY[i], (char)Mem.MEMORY[i+1], (char)Mem.MEMORY[i+2], (char)Mem.MEMORY[i+3]);//domyslnie powinien jeszcze raz czytać
@@ -361,15 +372,18 @@ namespace Supervisor
                 rejestry.r0 = 0;
                 return;
             }
-            rejestry.r5 = Mem.MEMORY[tmp];
+            string str = Convert.ToChar(Mem.MEMORY[tmp]).ToString() + Convert.ToChar(Mem.MEMORY[tmp+1]).ToString();
+
+            rejestry.r5 = int.Parse(str);
             tmp += 3;
             tmp2=tmp;
             tekst = null;
             for (; Convert.ToChar(Mem.MEMORY[tmp]) != '='; tmp++)
             {
                 tekst += Convert.ToChar(Mem.MEMORY[tmp]);
-                Console.WriteLine("Nazwa Procesu: {0}", tekst);
+                
             }
+            Console.WriteLine("Nazwa Procesu: {0}", tekst);
             if (Convert.ToChar(Mem.MEMORY[tmp + 1]) == 'I')
             {
                 rejestry.r6 = tmp2;
@@ -380,11 +394,14 @@ namespace Supervisor
                 rejestry.r7 = tmp2;
                 tmp += 5;
             }
+            tmp2 = tmp;
+            tekst = null;
             for (; Convert.ToChar(Mem.MEMORY[tmp]) != '='; tmp++)
             {
                 tekst += Convert.ToChar(Mem.MEMORY[tmp]);
-                Console.WriteLine("Nazwa Procesu: {0}", tekst);
+                
             }
+            Console.WriteLine("Nazwa Procesu: {0}", tekst);
             if (Convert.ToChar(Mem.MEMORY[tmp + 1]) == 'I')
             {
                 rejestry.r6 = tmp2;
@@ -543,7 +560,7 @@ namespace Supervisor
        public enum wartosc_SVC : byte { P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q };
        public enum wartosc_TYP : byte { R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, LR, MEM, WART, SEM, PROG };
        public enum wartosc_SEM : byte { MEMORY, COMMON, RECEIVER, R2_COMMON, R2_RECEIVER, FSBSEM };
-       public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR };
+       public enum wartosc_METHOD : byte { CZYSC_PODR, PRZYG_XR, INTER_KOM, SPRAWDZENIE, CZYTNIK, SCAN, PRZESZUKAJ_LISTE, PODRECZNA, READ_MSG, INTER_LOAD, PRINT_MSG, EXPUNGE1, EXPUNGE2, EXPUNGE3, EXPUNGE4, WART_MEMORY, POCZATEK_MEM, KONIEC_MEM, GRUPA, ZERUJ_PAM, XA, XF, XD, XR, XS, XR1, XR2, XS1, XS2, XS3, ZAPIS_R8 };
        public enum Eprog : byte { IBSUP, IN, OUT = 1, P, V, G, A, E, F, B, C, D, H, I, J, N, R, S, Y, Z, Q, USER, EXPUNGE };
        public static int[] adrProg = new int[25];//adresy początku programów (SVC) nie wszystkie
 
@@ -661,6 +678,7 @@ namespace Supervisor
            Console.Write("Tworzenie PCB dla pierwszego strumienia zlecień");
            Console.ReadLine();
            PCB ibsub1 = new PCB("*IBSUB");
+           ibsub1.grupa = 1;
            ibsub1.cpu_stan[0] = 0;
            ibsub1.cpu_stan[1] = 0;
            ibsub1.cpu_stan[2] = 0;
@@ -678,6 +696,7 @@ namespace Supervisor
            Console.ReadLine();
 
            PCB ibsub2 = new PCB("*IBSUB");
+           ibsub2.grupa = 2;
            ibsub2.cpu_stan[0] = 0;
            ibsub2.cpu_stan[1] = 0;
            ibsub2.cpu_stan[2] = 0;
